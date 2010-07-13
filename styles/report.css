@@ -1,0 +1,30 @@
+/* CSS Document */
+
+#rptitle {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 15px;
+	font-weight: bold;
+}
+
+#rtitle {
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	color: #FFFFFF;
+	background-color: #990000;
+}	
+
+#rtitle td{
+   text-decoration: underline;
+}
+
+.edgetd {
+   border-right: solid #000000 1px;
+}
+
+#fieldcell {
+   border-bottom: solid #000000 1px;
+   border-left: solid #000000 1px;
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+}   

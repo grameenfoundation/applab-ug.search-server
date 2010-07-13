@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Application Installer</title>
+</head>
+
+<body class="oneColElsCtr">
+
+<div id="container">
+  <div id="mainContent">
+    <h1 class="style1"> AppLab </h1>
+    
+    <form id="form1" method="post" action="sendapp.php">
+      <label>Phone number
+      <input name="phone_number" type="text" id="textfield" size="20" maxlength="20"  />
+      </label>
+            <p>
+              <label>Select phone
+              <select name="phone_type" id="select" >
+                <option value="n95">Nokia N95</option>
+                <option value="1680c">Nokia 1680c</option>
+                            </select>
+              </label>
+              </p>
+            <p>
+              <label>Select App
+              <select name="phone_app" id="select2">
+                <option value="ckwsearch"  >CKWsearch</option>
+                <option value="mobilesuv" >MobileSuv</option>
+                <option value="gis"  >GIS</option>
+              </select>
+              </label>
+                  </p>
+            <p>
+              <input type="submit" name="submit" id="button" value="Submit" />
+            </p>
+    </form>
+    <p>&nbsp;</p>
+  <!-- end #mainContent --></div>
+<!-- end #container --></div>
+</body>
+</html>

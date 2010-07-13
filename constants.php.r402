@@ -1,0 +1,87 @@
+<?
+/* database details */
+$dbhost    = 'localhost';
+$dbname    = 'ycppquiz';
+$dbuser    = 'ycppquiz';
+$dbpasswd  = 'ycppquiz';
+
+/* kannel details */
+$smsuser = 'ttc-sendsms';
+$smspass = 'ttc-sendsms';
+$shortcode = '0753717818';
+//$appurl = 'http://switch1-afol.yo.co.ug/~beg_g/ycppquiz';
+$appurl = 'http://applab.yo.co.ug/mobile';
+$admin_email = 'gbegumisa@yo.co.ug';
+$bcc_email = 'johnson@mpeirwe.name';
+
+$SYSTEM_LOCK = 'YCPPQ_SYSTEM_LOCK';
+$_DEFAULT_SESSION_LENGTH = 600;
+
+$sukey = 'iowzqtmf';
+$superuser = 'administrator';
+
+define('TITLE', 'Grameen Foundation');
+define('HOVERCOLOR', 'aliceblue');
+define('SERVICENO', '0902303085');
+define('NONE', '<span style="color: #FF3300">NONE</span>');
+define('keywordLength', 80);
+define('ROOT', '/var/www/html/mobile');
+define('FIFDIR', ROOT.'/FIF');
+define('reportDir', ROOT.'/reports');
+define('MOBILE_DIR', ROOT.'/mobile');
+define('MOBILE_UPLOADS_DIR', MOBILE_DIR.'/uploads');
+define('FormIdentifier', 'surveyId');
+define('PhoneId', 'phoneId');
+
+/* Questions */
+$maxqns = 25;
+$moreqns = 22;
+
+/* Answers */
+$maxans = 25;
+$moreans = 22;
+
+/* Mobile Survey */
+$maxflds = 200;
+$moreflds = 197;
+
+$msgstatus = array(
+                array('status' => 0,  'name' => 'PENDING', 'description' => 'Message Pending. No attempt made to send Message', 
+				'img' => 'pending.gif'),
+				array('status' => 1,  'name' => 'DELIVERED',  'description' => 'Message Successfuly Delivered', 'img' => 'delivered.gif'),
+				array('status' => 2,  'name' => 'FAILED', 'description' => 'Message Delivery Failed', 'img' => 'failed.gif'),
+				array('status' => 4,  'name' => 'BUFFERED', 'description' => 'Message Sent but not Yet Delivered', 'img' => 'buffered.gif'),
+				array('status' => 8,  'name' => 'SUBMITTED', 'description' => 'Message Submitted to SMSC', 'img' => 'submitted.gif'),
+				array('status' => 16, 'name' => 'REJECTED', 'description' => 'Message Rejected by SMSC', 'img' => 'rejected.gif')
+			 );
+
+$qnstatus = array(
+                'pending' => 'Pending. No attempt made to send Question',
+				'sent' => 'Question sent. Delivery not confirmed',
+				'delivered' => 'Question successfuly delivered'
+			 );
+$menu = array(
+			     array('label' => 'Quiz Items', 'link' => 'quiz.php', 'title' => 'Quiz Items', 'page'=>'quiz', 'admin'=>1),
+				 array('label' => 'Surveys', 'link' => 'surveys.php', 'title' => 'SMS Survey', 'page'=>'survey', 'admin'=>1),
+				 array('label' => 'Enhanced Surveys', 'link' => 'msurveys.php', 'title' => 'Enhanced Surveys','page'=>'msurvey', 'admin'=>0),
+				 array('label' => 'Keywords', 'link' => 'keywords.php', 'title' => 'General SMS Keywords', 'page'=>'keywords', 'admin'=>1),
+			     array('label' => 'Messaging', 'link' => 'messages.php', 'title' => 'Messaging', 'page'=>'messaging', 'admin'=>1),
+				 array('label' => 'Audit Trial', 'link' => 'logs.php', 'title' => 'Audit Trial', 'page'=>'audit', 'admin'=>1),
+				 array('label' => 'Administrators', 'link' => 'admins.php', 'title' => 'Administrators', 'page'=>'users', 'admin'=>1),
+				 array('label' => 'My Account', 'link' => 'preferences.php', 'title' => 'Edit Your Preferences', 'page'=>'account', 'admin'=>0),
+				 array('label' => 'Logout', 'link' => 'index.php?logout', 'title' => 'Logout', 'admin'=>0)
+			     
+		       );
+$fiftypes = array(
+                array('label'=>'DATA', 'value'=>'Data'),
+				array('label'=>'IMAGE', 'value'=>'Image'),
+				array('label'=>'CHECKBOX', 'value'=>'Checkbox'),
+				array('label'=>'RADIO', 'value'=>'Radio'),
+				array('label'=>'MENU', 'value'=>'Menu'),
+				array('label'=>'NUMERIC', 'value'=>'Numeric'),
+            );	
+$fifile = 'fif.xml';	
+
+$content_display_files = array('BananaMozaic', 'BananaWilt');
+		   	
+?>

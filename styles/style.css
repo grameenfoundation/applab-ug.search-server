@@ -1,0 +1,203 @@
+/* CSS Document */
+.main {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #000000;
+}
+
+a:link {
+	color: #0000FF;
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+	color: #0000FF;
+}
+a:hover {
+	text-decoration: underline;
+	color: #FF0000;
+}
+a:active {
+	text-decoration: none;
+	color: #FF0000;
+}
+
+fieldset {
+  border: solid #E4E4E4 1px;
+  margin: 0px;
+  padding: 0px;
+}
+
+form {
+   margin: 0px;
+}
+legend {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  color: #FF3300;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+select { 
+  padding: 0px;
+}
+  
+.border {
+   border: #B7DB93 solid 1px;
+}
+
+#note {
+   padding: 4px;
+   background-color: #E4E4E4;
+   border: solid #CCCCCC 1px;
+   cursor: pointer;
+   font-size: 10px;
+}
+.input {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 13px;
+  color: #000000;
+  border: solid #CCCCCC 1px;
+  padding: 1px;
+}
+
+.button {
+  font-family: Tahoma, Verdana;
+  font-size: 11px;
+}
+
+.caption {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: #FFFFFF;
+  background-color: #336699;
+  /*background-color: #9D3146;*/
+}
+
+.caption1 {
+ font-family: Arial, Tahoma;
+ color: #FFFFFF;
+ font-size: 13px;
+ background-color: #666666;
+}
+
+.caption2 {
+ font-family: Georgia, "Times New Roman", Times, serif;
+ color: #FF3300;
+ font-size: 13px;
+ font-weight: bold;
+}
+.caption3 {
+  color: #000000;
+  font-weight: bold; 
+  font-family: Georgia, 'Times New Roman', Times, serif; 
+  font-size: 16px;
+}
+.caption4 {
+   color: #FF3300;
+   font-weight: bold; 
+   font-family: Arial, Helvetica, sans-serif;
+   font-size: 14px;
+}
+.bottom {
+  font-family: Tahoma, verdana;
+  font-size: 11px;
+  color: #FFFFFF;
+  background-color: #336699;
+  /*background-color: #9D3146;*/
+}
+
+.title1 {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000000;
+} 
+
+#title {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000000;
+} 
+
+#title td {
+   text-decoration: underline;
+}   
+
+#label {
+  /*font-family: "Century Gothic";*/
+  color: #000000;
+  font-size: 12px;
+} 
+#field {
+  /*font-family: "Century Gothic";*/
+  color: #CC6600;
+  font-size: 12px;
+} 
+.label {
+  font-family: "Century Gothic";
+  color: #000000;
+  font-size: 13px;
+} 
+.field {
+  font-family: "Century Gothic";
+  color: #CC6600;
+  font-size: 14px;
+}  
+.error {
+  font-family: Tahoma, Arial;
+  font-size: 11px;
+  color: #FF0000;
+ }
+ 
+.underline {
+    /*border-bottom: solid #666666 1px;*/
+}	
+
+.options { 
+  background-color: #EEEEEE;
+  border-bottom: solid #FFFFFF 2px;
+  cursor: pointer;
+}  
+
+#submenu a {
+   text-decoration: underline;
+}   .options2 {
+	border: thin none #FF0000;
+	float: none;
+	clear: none;
+	padding-left: 10px;
+	padding-top: 6.5px;
+	padding-right: 10px;
+	padding-bottom: 6.5px;
+	margin-left: 5px;
+	background-color: #EEEEEE;
+}
+.options3 {
+	border: thin none #FF0000;
+	float: none;
+	clear: none;
+	background-color: #EEEEEE;
+	text-align: center;
+}
+#result {
+   border-collapse: collapse;
+}
+
+#result td{
+    border: solid #EEEEEE 1px;
+	padding: 4px;
+}	
+
+.bnum {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	padding-top: 3px;
+	padding-right: 5px;
+	padding-bottom: 3px;
+	padding-left: 5px; 
+	background-color:#E4E4E4; 
+	cursor:pointer; 
+}
