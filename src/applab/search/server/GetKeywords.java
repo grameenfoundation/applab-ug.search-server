@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import applab.server.ApplabServlet;
+import applab.server.ServletRequestContext;
 
 /**
  * Server method that returns the keywords requested by the client.
@@ -35,7 +36,7 @@ public class GetKeywords extends ApplabServlet {
     //  <remove id="45" />
     // </GetKeywordsResponse>
     @Override
-    protected void doApplabPost(HttpServletRequest request, HttpServletResponse response) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException {
+    protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException {
         // TODO: add implementation (see applab.surveys.server.Select.java for inspiration) 
     }
 }
