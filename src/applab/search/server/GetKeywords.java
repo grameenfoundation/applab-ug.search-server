@@ -76,7 +76,7 @@ public class GetKeywords extends ApplabServlet {
         context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE);
         context.writeStartElement(VERSION_ELEMENT_NAME);
         context.writeText(dateFormat.format(date));
-        context.writeEndElement(VERSION_ELEMENT_NAME);
+        context.writeEndElement();
         SelectCommand selectCommand = new SelectCommand(DatabaseTable.Keyword);
         try {
             ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(selectCommand, requestXml);
@@ -86,17 +86,17 @@ public class GetKeywords extends ApplabServlet {
                 if (resultSet.getBoolean("isDeleted")) {
                     attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
                     context.writeStartElement(REMOVE_ELEMENT_NAME, attributes);
-                    context.writeEndElement(REMOVE_ELEMENT_NAME);
+                    context.writeEndElement();
                 }
                 else {
                     attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
                     attributes.put(CATEGORY_ATTRIBUTE_NAME, resultSet.getString("categoryName"));
                     context.writeStartElement(ADD_ELEMENT_NAME, attributes);
                     context.writeText(resultSet.getString("keywordValue"));
-                    context.writeEndElement(ADD_ELEMENT_NAME);
+                    context.writeEndElement();
                 }
             }
-            context.writeEndElement(RESPONSE_ELEMENT_NAME);
+            context.writeEndElement();
         }
         finally {
             if (selectCommand != null) {
