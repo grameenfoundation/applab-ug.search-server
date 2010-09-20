@@ -54,3 +54,20 @@ CREATE TABLE IF NOT EXISTS `normalizedKeywords` (
 	PRIMARY KEY (`id`),
 	FOREIGN KEY (`keywordId`) REFERENCES keyword(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- This table will be removed and put into Saleforce as part of 2.8
+CREATE TABLE IF NOT EXISTS `OktopusSearchLog` (
+
+	`id`                   bigint(10) unsigned       NOT NULL auto_increment,
+	`server_entry_time`    datetime                  NOT NULL default '0000-00-00 00:00:00',
+	`handset_submit_time`  datetime                  NOT NULL default '0000-00-00 00:00:00',
+	`handset_id`           varchar(255)              NOT NULL,
+	`interviewee_id`       varchar(255)              NOT NULL,
+	`location`             varchar(255)              NOT NULL,
+	`status`               enum('SUCEEDED','FAILED') NOT NULL default 'SUCEEDED',
+	`query`                varchar(255)              NOT NULL,
+	`content`              trxt                      NOT NULL,
+	`interviewer_id`       varchar(255)              NOT NULL,
+	`interviewer_name`     varchar(255)              NOT NULL,
+	PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
