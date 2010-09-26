@@ -6,11 +6,15 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import applab.search.server.KeywordsContentBuilder;
+import applab.server.ApplabConfiguration;
 import applab.server.DatabaseTable;
 import applab.server.SelectCommand;
+import applab.server.SqlImplementation;
 import applab.server.XmlHelpers;
+import applab.server.test.RemoteSqlImplementation;
+import applab.server.test.ServerTestCase;
 
-public class TestGetKeywords {
+public class TestGetKeywords extends ServerTestCase {
     private static final String LOCAL_KEYWORDS_VERSION = "2010-07-20 18:34:36";
 
     private Document mockRequest() {
@@ -41,11 +45,14 @@ public class TestGetKeywords {
 
     /**
      * Use to test if a result set is returned for the select query
+     * TODO: Comment from Lauren on review (http://pmo.applab.org:8070/cru/OKP-17#c537)
+     * Can we do better than checking that the response is non-null? e.g. check that it contains some of the expected nodes or, 
+     * ideally, compare it to an expected XML string.
      */
     @Test
     public void testdoSelectQuery() {
         try {
-            Assert.assertNotNull(KeywordsContentBuilder.doSelectQuery(new SelectCommand(DatabaseTable.Keyword), mockRequest()));
+        	Assert.assertNotNull(KeywordsContentBuilder.doSelectQuery(new SelectCommand(DatabaseTable.Keyword), mockRequest()));
         }
         catch (Exception e) {
             Assert.fail(e.toString() + " (Reconfigure build environment?)");

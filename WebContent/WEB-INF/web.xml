@@ -14,4 +14,15 @@
      <servlet-name>GetKeywords</servlet-name>
      <url-pattern>/getKeywords</url-pattern>
    </servlet-mapping>
+   
+   <servlet>
+     <description>Search for content</description>
+     <servlet-name>Search</servlet-name>
+     <servlet-class>applab.search.server.Search</servlet-class>
+   </servlet>
+   
+   <servlet-mapping>
+     <servlet-name>Search</servlet-name>
+     <url-pattern>/search</url-pattern>
+   </servlet-mapping>
  </web-app>
