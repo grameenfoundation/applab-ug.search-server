@@ -27,13 +27,13 @@ import applab.server.test.ServerTestCase;
 public class TestSearch extends ServerTestCase {
     // Binding
     private SoapBindingStub binding;
-    
+
     @Before
     public void setUp() throws Exception {
         super.setUp();
         binding = SalesforceProxy.createBinding();
     }
-    
+
     /**
      * Use to test that the mockRequest returns non-empty content.
      * 
@@ -50,8 +50,8 @@ public class TestSearch extends ServerTestCase {
             select.addField(keywordTableName + ".keyword");
             select.addField(keywordTableName + ".content");
             select.addField(categoryTableName + ".name");
-            select.whereEquals(keywordTableName + ".isDeleted","0");
-            select.whereEquals(categoryTableName + ".isDeleted","0");
+            select.whereEquals(keywordTableName + ".isDeleted", "0");
+            select.whereEquals(categoryTableName + ".isDeleted", "0");
             select.innerJoin(DatabaseTable.Category, keywordTableName + ".categoryId = " + categoryTableName + ".id");
             select.orderBy("RAND()");
             select.limit(1);
@@ -65,8 +65,8 @@ public class TestSearch extends ServerTestCase {
             HashMap<String, String> record = Search.getContent(resultSet.getString("keyword"));
             Assert.assertNotNull(record); // Shouldn't be null
             Assert.assertTrue(record.get("content").length() > 0); // Content should be non zero length
-            Assert.assertEquals(record.get("content"), resultSet.getString("content")); // Content should be the
-                                                                                              // same
+            // Content should be the same: (use contains because we're adding attribution and last updated date, etc
+            Assert.assertTrue(record.get("content").contains(resultSet.getString("content").replace("\r\n", "\n"))); 
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -108,43 +108,42 @@ public class TestSearch extends ServerTestCase {
             else {
                 trackCreatedSalesforceObject(personSaveResult[0].getId());
             }
-            
+
             CKW__c ckw = new CKW__c();
             ckw.setPerson__c(personSaveResult[0].getId());
             SaveResult[] ckwSaveResult = binding.create(new CKW__c[] { ckw });
-            
+
             if (!ckwSaveResult[0].isSuccess()) {
                 throw new Exception("Test Failed: Failed to save CKW!");
             }
             else {
                 trackCreatedSalesforceObject(ckwSaveResult[0].getId());
             }
-            
+
             // Create interviewee
             Person__c farmerPersonObject = new Person__c();
             farmerPersonObject.setFirst_Name__c("MyTestFarmerFirstName");
             farmerPersonObject.setLast_Name__c("MyTestFarmerLastName");
             SaveResult[] farmerPersonObjectSaveResult = binding.create(new Person__c[] { farmerPersonObject });
-            
+
             if (!farmerPersonObjectSaveResult[0].isSuccess()) {
                 throw new Exception("Test Failed: Failed to save Farmer Person Object!");
             }
             else {
                 trackCreatedSalesforceObject(farmerPersonObjectSaveResult[0].getId());
             }
-            
+
             Farmer__c farmer = new Farmer__c();
             farmer.setName("MyTestFarmerId");
             farmer.setPerson__c(farmerPersonObjectSaveResult[0].getId());
-            SaveResult[] farmerSaveResult = binding.create(new Farmer__c[] { farmer } );
-            
+            SaveResult[] farmerSaveResult = binding.create(new Farmer__c[] { farmer });
+
             if (!farmerSaveResult[0].isSuccess()) {
                 throw new Exception("Test Failed: Failed to save Farmer!");
             }
             else {
                 trackCreatedSalesforceObject(farmerSaveResult[0].getId());
             }
-            
 
             // Run a query that should register a hit for those objects
             if (ApplabConfiguration.useRemoteDatabase()) {
@@ -152,26 +151,28 @@ public class TestSearch extends ServerTestCase {
             }
             HashMap<String, String> content = Search.getContent("MyTestKeyword");
             Search.logSearchRequest("TestSearchIMEI", "MyTestFarmerId", "MyTestKeyword", content, "", false, "2010-09-22 00:00:00");
-    
+
             // Check that a hit is registered and is linked to right ckw and farmer
-            QueryResult logQuery = binding.query("Select Id FROM Search_Log__c WHERE Interviewer__c = '" + personSaveResult[0].getId() + "' and Interviewee__c = '" + farmerPersonObjectSaveResult[0].getId() + "'");
+            QueryResult logQuery = binding.query("Select Id FROM Search_Log__c WHERE Interviewer__c = '" + personSaveResult[0].getId()
+                    + "' and Interviewee__c = '" + farmerPersonObjectSaveResult[0].getId() + "'");
             Assert.assertTrue(logQuery.getSize() > 0);
-           
-            // Store for clean up 
+
+            // Store for clean up
             trackCreatedSalesforceObject(logQuery.getRecords(0).getId());
-            
+
             // Check that if only first and last name are given, a hit is still linked to the correct farmer
             Search.logSearchRequest("TestSearchIMEI", "", "MyTestKeyword", content, "", false, "2010-09-22 00:00:00");
-            QueryResult logQuery2 = binding.query("Select Id FROM Search_Log__c WHERE Interviewer__c = '" + personSaveResult[0].getId() + "' and Interviewee__c = '" + farmerPersonObjectSaveResult[0].getId() + "'");
+            QueryResult logQuery2 = binding.query("Select Id FROM Search_Log__c WHERE Interviewer__c = '" + personSaveResult[0].getId()
+                    + "' and Interviewee__c = '" + farmerPersonObjectSaveResult[0].getId() + "'");
             Assert.assertTrue(logQuery2.getSize() == (logQuery.getSize() + 1)); // Now two hits for this farmer
-            
+
             // Store for clean up
-            for(int counter = 0; counter < logQuery2.getSize(); counter ++) {
+            for (int counter = 0; counter < logQuery2.getSize(); counter++) {
                 trackCreatedSalesforceObject(logQuery2.getRecords(counter).getId());
             }
-            
+
             // TODO: Check that if no farmer is given, a hit is still registered, and an anonymous farmer is created
-            
+
             // TODO: Check that if an unknown handset id is given, a hit is still registered, and an anonymous ckw
         }
         catch (Exception e) {
@@ -180,4 +181,3 @@ public class TestSearch extends ServerTestCase {
         }
     }
 }
-

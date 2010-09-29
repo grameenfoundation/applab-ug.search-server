@@ -1,6 +1,7 @@
 package applab.search.server;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -67,12 +68,18 @@ public class Search extends ApplabServlet {
         Boolean isCachedQuery = (request.getParameter(LOG_ONLY_PARAM) != null);
         String intervieweeId = request.getParameter(INTERVIEWEE_ID_PARAM);
         String location = request.getParameter(LOCATION_PARAM);
-        String handsetSubmitTime = request.getParameter(HANDSET_SUBMISSION_TIME_PARAM);
+        String submissionTime = request.getParameter(HANDSET_SUBMISSION_TIME_PARAM);
         
-        if(keyword == null || intervieweeId == null || location == null || handsetSubmitTime == null) {
+        if(keyword == null || intervieweeId == null || location == null || submissionTime == null) {
             context.writeText("Some required parameters are missing.");
         }
         else {
+            // some URL decoding
+            keyword = URLDecoder.decode(keyword, "UTF-8");
+            intervieweeId = URLDecoder.decode(intervieweeId, "UTF-8");
+            location = URLDecoder.decode(location, "UTF-8");
+            submissionTime = URLDecoder.decode(submissionTime, "UTF-8");
+            
             HashMap<String, String> content = null;
     
             if (!isCachedQuery) {
@@ -81,14 +88,14 @@ public class Search extends ApplabServlet {
             }
     
             logSearchRequest(context.getHandsetId(), intervieweeId, keyword,
-                    content, location, isCachedQuery, handsetSubmitTime);
+                    content, location, isCachedQuery, submissionTime);
         }
         
         context.close();
     }
 
     public static void logSearchRequest(String handsetId, String intervieweeId,String keyword,
-                                   HashMap<String, String> contentHash, String location, Boolean isCachedQuery, String handsetSubmitTime)
+                                   HashMap<String, String> contentHash, String location, Boolean isCachedQuery, String submissionTime)
             throws SQLException, RemoteException, ServiceException {
         String content = null;
 
@@ -134,7 +141,7 @@ public class Search extends ApplabServlet {
         searchLogEntry.setCategory(category);
         searchLogEntry.setContent(content);
         searchLogEntry.setFarmerId(intervieweeId);
-        searchLogEntry.setHandsetSubmitTime(handsetSubmitTime);
+        searchLogEntry.setSubmissionTime(submissionTime);
 
         Calendar calendar = Calendar.getInstance();
         String serverEntryTime = SalesforceProxy.formatDateTime(calendar.getTime());
@@ -158,15 +165,12 @@ public class Search extends ApplabServlet {
 
     private static void writeResponse(HashMap<String, String> content,
                                       ServletRequestContext context) throws IOException, ClassNotFoundException, SQLException {
-        context.writeXmlHeader();
-        context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE);
         if (content != null) {
             context.writeText(content.get("content"));
         }
         else {
             context.writeText(CONTENT_NOT_FOUND_RESPONSE_MESSAGE);
         }
-        context.writeEndElement();
     }
 
     public static HashMap<String, String> getContent(String keyword) throws ClassNotFoundException, SQLException {
@@ -176,15 +180,28 @@ public class Search extends ApplabServlet {
 
         SelectCommand select = new SelectCommand(DatabaseTable.Keyword);
         select.addField(keywordTableName + ".content");
+        select.addField(keywordTableName + ".attribution");
+        select.addField(keywordTableName + ".updated");
         select.addField(categoryTableName + ".name"); // Get the category as well
-        select.whereEquals(keywordTableName + ".keyword", "'" + keyword + "'");
+        // We need to do this because keywords are stored with _
+        // TODO: there's a small chance that this replacement will cause us to return wrong content (a_b c <==> a b_c)
+        select.whereEquals("REPLACE(" + keywordTableName + ".keyword, '_', ' ')", "'" + keyword + "'");
         select.whereEquals(keywordTableName + ".isDeleted", "0");
         select.whereEquals(categoryTableName + ".isDeleted", "0");
         select.innerJoin(DatabaseTable.Category, keywordTableName + ".categoryId = " + categoryTableName + ".id");
         select.limit(1);
         ResultSet resultSet = select.execute();
         if (resultSet.next()) {
-            results.put("content", resultSet.getString("content"));
+            String content = resultSet.getString("content").replace("\r\n", "\n");
+            String attribution = resultSet.getString("attribution").replace("\r\n", "\n");
+            if(attribution != null && attribution.length() > 0) {
+                content += "\n\nAttribution: " + attribution;
+            }
+            String updated = resultSet.getString("updated").replace("\r\n", "\n");
+            if(updated != null && updated.length() > 0) {
+                content += "\n\nLast Updated: " + updated;
+            }
+            results.put("content", content);
             results.put("category", resultSet.getString("name"));
             results.put("keyword", keyword);
         }
