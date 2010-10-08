@@ -25,4 +25,15 @@
      <servlet-name>Search</servlet-name>
      <url-pattern>/search</url-pattern>
    </servlet-mapping>
+   
+   <servlet>
+     <description>Get Images</description>
+     <servlet-name>GetImages</servlet-name>
+     <servlet-class>applab.search.server.GetImages</servlet-class>
+   </servlet>
+   
+   <servlet-mapping>
+     <servlet-name>GetImages</servlet-name>
+     <url-pattern>/getImages</url-pattern>
+   </servlet-mapping>
  </web-app>

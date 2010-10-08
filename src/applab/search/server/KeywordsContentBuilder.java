@@ -32,10 +32,13 @@ public class KeywordsContentBuilder {
     public static ResultSet doSelectQuery(SelectCommand selectCommand, Document requestXml) throws ClassNotFoundException, SQLException {
         String localVersion = KeywordsContentBuilder.getLocalKeywordsVersion(requestXml);
         selectCommand.addField("keyword.id", "keywordId");
+        selectCommand.addField("keyword.weight", "keywordWeight");
+        selectCommand.addField("keyword.content", "keywordContent");
+        selectCommand.addField("keyword.attribution", "keywordAttribution");
+        selectCommand.addField("keyword.updated", "keywordUpdated");
         selectCommand.addField("category.name", "categoryName");
         selectCommand.innerJoin(DatabaseTable.Category, "category.id = keyword.categoryId");
         selectCommand.addField("keyword.keyword", "keywordValue");
-        selectCommand.addField("keyword.id", "keywordId");
         selectCommand.addField("keyword.isDeleted", "isDeleted");
         // retrieve only active content
         selectCommand.whereEquals("category.ckwsearch", "1");
@@ -46,6 +49,7 @@ public class KeywordsContentBuilder {
         else {
             selectCommand.whereNot("keyword.isDeleted");
         }
+        selectCommand.orderBy("keyword.updated desc"); // We do this so that the most recently updated one is on top (this allows us to get the next version number)
         return selectCommand.execute();
     }
 

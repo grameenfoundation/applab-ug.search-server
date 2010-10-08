@@ -1,6 +1,7 @@
 package applab.search.server;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -10,12 +11,18 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
+
 import applab.server.*;
+import applab.server.test.RemoteSqlImplementation;
 
 /**
  * Server method that returns the keywords requested by the client.
@@ -30,8 +37,12 @@ public class GetKeywords extends ApplabServlet {
     private final static String ADD_ELEMENT_NAME = "add";
     private final static String REMOVE_ELEMENT_NAME = "remove";
     private final static String ID_ATTRIBUTE_NAME = "id";
+    private final static String WEIGHT_ATTRIBUTE_NAME = "order";
+    private final static String KEYWORD_ATTRIBUTE_NAME = "keyword";
     private final static String VERSION_ELEMENT_NAME = "version";
     private final static String CATEGORY_ATTRIBUTE_NAME = "category";
+    private final static String ATTRIBUTION_ATTRIBUTE_NAME = "attribution";
+    private final static String UPDATED_ATTRIBUTE_NAME = "updated";
 
     // Given a post body like: <?xml version="1.0"?> <GetKeywordsRequest
     // xmlns="http://schemas.applab.org/2010/07/search">
@@ -69,20 +80,34 @@ public class GetKeywords extends ApplabServlet {
      */
     public static void writeResponse(Document requestXml, ServletRequestContext context) throws SQLException, ClassNotFoundException,
             IOException {
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
         context.writeXmlHeader();
         context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE);
-        context.writeStartElement(VERSION_ELEMENT_NAME);
-        context.writeText(dateFormat.format(date));
-        context.writeEndElement();
+
         SelectCommand selectCommand = new SelectCommand(DatabaseTable.Keyword);
+        Boolean isFirst = true;
         try {
             ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(selectCommand, requestXml);
             HashMap<String, String> attributes = new HashMap<String, String>();
             while (resultSet.next()) {
                 attributes.clear();
+
+                if (isFirst) {
+                    // This is the first result, so we use it's updated time as the version
+                    // For this to work, results should be ordered by updated date field descending
+                    context.writeStartElement(VERSION_ELEMENT_NAME);
+                    String updated = resultSet.getString("keywordUpdated");
+                    if (updated != null && updated.trim().length() > 0) {
+                        context.writeText(updated);
+                    }
+                    else {
+                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date date = new Date();
+                        context.writeText(dateFormat.format(date));
+                    }
+                    context.writeEndElement();
+                    isFirst = false;
+                }
+
                 if (resultSet.getBoolean("isDeleted")) {
                     attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
                     context.writeStartElement(REMOVE_ELEMENT_NAME, attributes);
@@ -90,15 +115,42 @@ public class GetKeywords extends ApplabServlet {
                 }
                 else {
                     attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
+                    attributes.put(KEYWORD_ATTRIBUTE_NAME, resultSet.getString("keywordValue"));
+                    attributes.put(WEIGHT_ATTRIBUTE_NAME, resultSet.getString("keywordWeight"));
                     attributes.put(CATEGORY_ATTRIBUTE_NAME, resultSet.getString("categoryName"));
+                    
+                    String attribution = resultSet.getString("keywordAttribution");
+                    if (attribution != null && attribution.trim().length() > 0) {
+                        attribution = XmlHelpers.escapeText(attribution.trim().replace("\r\n", "\n"));
+                    }
+                    else {
+                        attribution = "";
+                    }
+                    attributes.put(ATTRIBUTION_ATTRIBUTE_NAME, attribution);
+                    
+                    String updated = resultSet.getString("keywordUpdated");
+                    if (updated != null && updated.trim().length() > 0) {
+                        updated = XmlHelpers.escapeText(updated.trim().replace("\r\n", "\n"));
+                    }
+                    else {
+                        updated = "";
+                    }                        
+                    attributes.put(UPDATED_ATTRIBUTE_NAME, updated);
+                    
                     context.writeStartElement(ADD_ELEMENT_NAME, attributes);
-                    context.writeText(resultSet.getString("keywordValue"));
+
+                    // Content
+                    String content = resultSet.getString("keywordContent");
+                    if (content != null && content.trim().length() > 0) {
+                        content = XmlHelpers.escapeText(content.trim().replace("\r\n", "\n"));
+                        context.writeText(content);
+                    }
                     context.writeEndElement();
                 }
             }
-            context.writeEndElement();
         }
         finally {
+            context.writeEndElement();
             if (selectCommand != null) {
                 selectCommand.dispose();
             }

@@ -54,16 +54,17 @@ public class Search extends ApplabServlet {
     /**
      * For now, we're using an http get for this /.../search?keyword=keyword&intervieweeId=XYZ&....
      * We will shift to xml post as per spec when the client side changes are ready to be made
+     * @throws Exception 
      */
     @Override
     protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException, ServiceException {
+    throws Exception {
         doApplabPost(request, response, context);
     }
     
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-            throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException, ServiceException {
+            throws Exception {
         String keyword = request.getParameter(KEYWORD_PARAM);
         Boolean isCachedQuery = (request.getParameter(LOG_ONLY_PARAM) != null);
         String intervieweeId = request.getParameter(INTERVIEWEE_ID_PARAM);
@@ -173,40 +174,52 @@ public class Search extends ApplabServlet {
         }
     }
 
-    public static HashMap<String, String> getContent(String keyword) throws ClassNotFoundException, SQLException {
+    public static HashMap<String, String> getContent(String keyword) throws Exception {
         HashMap<String, String> results = new HashMap<String, String>();
         String keywordTableName = DatabaseTable.Keyword.getTableName();
         String categoryTableName = DatabaseTable.Category.getTableName();
 
         SelectCommand select = new SelectCommand(DatabaseTable.Keyword);
-        select.addField(keywordTableName + ".content");
-        select.addField(keywordTableName + ".attribution");
-        select.addField(keywordTableName + ".updated");
-        select.addField(categoryTableName + ".name"); // Get the category as well
-        // We need to do this because keywords are stored with _
-        // TODO: there's a small chance that this replacement will cause us to return wrong content (a_b c <==> a b_c)
-        select.whereEquals("REPLACE(" + keywordTableName + ".keyword, '_', ' ')", "'" + keyword + "'");
-        select.whereEquals(keywordTableName + ".isDeleted", "0");
-        select.whereEquals(categoryTableName + ".isDeleted", "0");
-        select.innerJoin(DatabaseTable.Category, keywordTableName + ".categoryId = " + categoryTableName + ".id");
-        select.limit(1);
-        ResultSet resultSet = select.execute();
-        if (resultSet.next()) {
-            String content = resultSet.getString("content").replace("\r\n", "\n");
-            String attribution = resultSet.getString("attribution").replace("\r\n", "\n");
-            if(attribution != null && attribution.length() > 0) {
-                content += "\n\nAttribution: " + attribution;
+        try {
+            select.addField(keywordTableName + ".content");
+            select.addField(keywordTableName + ".attribution");
+            select.addField(keywordTableName + ".updated");
+            select.addField(categoryTableName + ".name"); // Get the category as well
+            // We need to do this because keywords are stored with _
+            // TODO: there's a small chance that this replacement will cause us to return wrong content (a_b c <==> a b_c)
+            select.whereEquals("REPLACE(" + keywordTableName + ".keyword, '_', ' ')", "'" + keyword + "'");
+            select.whereEquals(keywordTableName + ".isDeleted", "0");
+            select.whereEquals(categoryTableName + ".isDeleted", "0");
+            select.innerJoin(DatabaseTable.Category, keywordTableName + ".categoryId = " + categoryTableName + ".id");
+            select.limit(1);
+            ResultSet resultSet = select.execute();
+            if (resultSet.next()) {
+                String content = resultSet.getString("content");
+                if(content != null && content.trim().length() > 0) {
+                    content = content.trim().replace("\r\n", "\n");
+                }
+                String attribution = resultSet.getString("attribution");
+                if (attribution != null && attribution.trim().length() > 0) {
+                    content += "\n\nAttribution: " + attribution.trim().replace("\r\n", "\n");
+                }
+                String updated = resultSet.getString("updated");
+                if (updated != null && updated.trim().length() > 0) {
+                    content += "\n\nLast Updated: " + updated.trim().replace("\r\n", "\n");
+                }
+                results.put("content", content);
+                results.put("category", resultSet.getString("name"));
+                results.put("keyword", keyword);
             }
-            String updated = resultSet.getString("updated").replace("\r\n", "\n");
-            if(updated != null && updated.length() > 0) {
-                content += "\n\nLast Updated: " + updated;
+            else {
+                results = null;
             }
-            results.put("content", content);
-            results.put("category", resultSet.getString("name"));
-            results.put("keyword", keyword);
         }
-        else {
-            results = null;
+        catch (Exception e) {
+            // TODO: handle exception
+            throw e;
+        }
+        finally {
+            select.dispose();
         }
         return results;
     }
