@@ -1,7 +1,6 @@
 package applab.search.server;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -11,18 +10,16 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.Debug;
-
-import applab.server.*;
-import applab.server.test.RemoteSqlImplementation;
+import applab.server.ApplabServlet;
+import applab.server.DatabaseTable;
+import applab.server.SelectCommand;
+import applab.server.ServletRequestContext;
+import applab.server.XmlHelpers;
 
 /**
  * Server method that returns the keywords requested by the client.
@@ -39,21 +36,25 @@ public class GetKeywords extends ApplabServlet {
     private final static String ID_ATTRIBUTE_NAME = "id";
     private final static String WEIGHT_ATTRIBUTE_NAME = "order";
     private final static String KEYWORD_ATTRIBUTE_NAME = "keyword";
-    private final static String VERSION_ELEMENT_NAME = "version";
     private final static String CATEGORY_ATTRIBUTE_NAME = "category";
     private final static String ATTRIBUTION_ATTRIBUTE_NAME = "attribution";
     private final static String UPDATED_ATTRIBUTE_NAME = "updated";
+    private static final String VERSION_ATTRIBUTE_NAME = "version";
+    private static final String TOTAL_ATTRIBUTE_NAME = "total";
 
-    // Given a post body like: <?xml version="1.0"?> <GetKeywordsRequest
-    // xmlns="http://schemas.applab.org/2010/07/search">
+    // Given a post body like:
+    // <?xml version="1.0"?>
+    // <GetKeywordsRequest xmlns="http://schemas.applab.org/2010/07/search">
     // <localKeywordsVersion>2010-07-13 18:08:33</localKeywordsVersion>
     // </GetKeywordsRequest>
     //
-    // returns a response like: <?xml version="1.0"?> <GetKeywordsResponse
-    // xmlns="http://schemas.applab.org/2010/07/search"> <version>2010-07-20
-    // 18:34:36</version> <add id="23219" category="Farm_Inputs">Sironko Sisiyi
-    // Seeds</add> <add id="39243" category="Animals">Bees Pests Wax_moths<add/>
-    // <remove id="45" /> </GetKeywordsResponse>
+    // returns a response like:
+    // <?xml version="1.0"?>
+    // <GetKeywordsResponse xmlns="http://schemas.applab.org/2010/07/search" version="2010-07-20 18:34:36" total="25">
+    // <add id="23219" category="Farm_Inputs">Sironko Sisiyi Seeds</add>
+    // <add id="39243" category="Animals">Bees Pests Wax_moths<add/>
+    // <remove id="45" />
+    // </GetKeywordsResponse>
 
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
@@ -81,12 +82,15 @@ public class GetKeywords extends ApplabServlet {
     public static void writeResponse(Document requestXml, ServletRequestContext context) throws SQLException, ClassNotFoundException,
             IOException {
         context.writeXmlHeader();
-        context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE);
 
         SelectCommand selectCommand = new SelectCommand(DatabaseTable.Keyword);
         Boolean isFirst = true;
         try {
             ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(selectCommand, requestXml);
+
+            // Save the totalSize (we get it here before we iterate)
+            Integer total = getResultSetSize(resultSet);
+
             HashMap<String, String> attributes = new HashMap<String, String>();
             while (resultSet.next()) {
                 attributes.clear();
@@ -94,17 +98,22 @@ public class GetKeywords extends ApplabServlet {
                 if (isFirst) {
                     // This is the first result, so we use it's updated time as the version
                     // For this to work, results should be ordered by updated date field descending
-                    context.writeStartElement(VERSION_ELEMENT_NAME);
                     String updated = resultSet.getString("keywordUpdated");
+                    String version = "";
                     if (updated != null && updated.trim().length() > 0) {
-                        context.writeText(updated);
+                        version = updated;
                     }
                     else {
                         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         Date date = new Date();
-                        context.writeText(dateFormat.format(date));
+                        version = dateFormat.format(date);
                     }
-                    context.writeEndElement();
+
+                    HashMap<String, String> startAttributes = new HashMap<String, String>();
+                    startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
+                    startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
+                    context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "", startAttributes);
+
                     isFirst = false;
                 }
 
@@ -118,7 +127,7 @@ public class GetKeywords extends ApplabServlet {
                     attributes.put(KEYWORD_ATTRIBUTE_NAME, resultSet.getString("keywordValue"));
                     attributes.put(WEIGHT_ATTRIBUTE_NAME, resultSet.getString("keywordWeight"));
                     attributes.put(CATEGORY_ATTRIBUTE_NAME, resultSet.getString("categoryName"));
-                    
+
                     String attribution = resultSet.getString("keywordAttribution");
                     if (attribution != null && attribution.trim().length() > 0) {
                         attribution = XmlHelpers.escapeText(attribution.trim().replace("\r\n", "\n"));
@@ -127,16 +136,16 @@ public class GetKeywords extends ApplabServlet {
                         attribution = "";
                     }
                     attributes.put(ATTRIBUTION_ATTRIBUTE_NAME, attribution);
-                    
+
                     String updated = resultSet.getString("keywordUpdated");
                     if (updated != null && updated.trim().length() > 0) {
                         updated = XmlHelpers.escapeText(updated.trim().replace("\r\n", "\n"));
                     }
                     else {
                         updated = "";
-                    }                        
+                    }
                     attributes.put(UPDATED_ATTRIBUTE_NAME, updated);
-                    
+
                     context.writeStartElement(ADD_ELEMENT_NAME, attributes);
 
                     // Content
@@ -148,14 +157,31 @@ public class GetKeywords extends ApplabServlet {
                     context.writeEndElement();
                 }
             }
+
+            context.writeEndElement(); // Close the first element
         }
         finally {
-            context.writeEndElement();
             if (selectCommand != null) {
                 selectCommand.dispose();
             }
         }
 
+    }
+
+    // Not the most effecient way of getting total number of rows
+    public static int getResultSetSize(ResultSet resultSet) {
+        int size = -1;
+
+        try {
+            resultSet.last();
+            size = resultSet.getRow();
+            resultSet.beforeFirst();
+        }
+        catch (SQLException e) {
+            return size;
+        }
+
+        return size;
     }
 
 }

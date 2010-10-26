@@ -3,31 +3,14 @@ package applab.search.server;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.rmi.RemoteException;
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
-import javax.xml.soap.SOAPHeaderElement;
-
-import org.xml.sax.SAXException;
-
-import com.sforce.soap.enterprise.LoginResult;
-import com.sforce.soap.enterprise.SessionHeader;
-import com.sforce.soap.enterprise.SforceService;
-import com.sforce.soap.enterprise.SforceServiceLocator;
-import com.sforce.soap.enterprise.Soap;
-import com.sforce.soap.enterprise.SoapBindingStub;
-import com.sforce.soap.schemas._class.CreateSearchLogEntry.CreateSearchLogEntryBindingStub;
-import com.sforce.soap.schemas._class.CreateSearchLogEntry.CreateSearchLogEntryServiceLocator;
-import com.sforce.soap.schemas._class.CreateSearchLogEntry.SearchLogEntry;
 
 import applab.Location;
 import applab.server.ApplabConfiguration;
@@ -36,6 +19,14 @@ import applab.server.DatabaseTable;
 import applab.server.SalesforceProxy;
 import applab.server.SelectCommand;
 import applab.server.ServletRequestContext;
+
+import com.sforce.soap.enterprise.LoginResult;
+import com.sforce.soap.enterprise.SessionHeader;
+import com.sforce.soap.enterprise.SforceServiceLocator;
+import com.sforce.soap.enterprise.SoapBindingStub;
+import com.sforce.soap.schemas._class.CreateSearchLogEntry.CreateSearchLogEntryBindingStub;
+import com.sforce.soap.schemas._class.CreateSearchLogEntry.CreateSearchLogEntryServiceLocator;
+import com.sforce.soap.schemas._class.CreateSearchLogEntry.SearchLogEntry;
 
 public class Search extends ApplabServlet {
 
@@ -52,16 +43,17 @@ public class Search extends ApplabServlet {
     private final static String HANDSET_SUBMISSION_TIME_PARAM = "submissionTime";
 
     /**
-     * For now, we're using an http get for this /.../search?keyword=keyword&intervieweeId=XYZ&....
-     * We will shift to xml post as per spec when the client side changes are ready to be made
-     * @throws Exception 
+     * For now, we're using an http get for this /.../search?keyword=keyword&intervieweeId=XYZ&.... We will shift to xml
+     * post as per spec when the client side changes are ready to be made
+     * 
+     * @throws Exception
      */
     @Override
     protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws Exception {
+            throws Exception {
         doApplabPost(request, response, context);
     }
-    
+
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
             throws Exception {
@@ -70,8 +62,8 @@ public class Search extends ApplabServlet {
         String intervieweeId = request.getParameter(INTERVIEWEE_ID_PARAM);
         String location = request.getParameter(LOCATION_PARAM);
         String submissionTime = request.getParameter(HANDSET_SUBMISSION_TIME_PARAM);
-        
-        if(keyword == null || intervieweeId == null || location == null || submissionTime == null) {
+
+        if (keyword == null || intervieweeId == null || location == null || submissionTime == null) {
             context.writeText("Some required parameters are missing.");
         }
         else {
@@ -80,23 +72,23 @@ public class Search extends ApplabServlet {
             intervieweeId = URLDecoder.decode(intervieweeId, "UTF-8");
             location = URLDecoder.decode(location, "UTF-8");
             submissionTime = URLDecoder.decode(submissionTime, "UTF-8");
-            
+
             HashMap<String, String> content = null;
-    
+
             if (!isCachedQuery) {
                 content = getContent(keyword);
                 Search.writeResponse(content, context);
             }
-    
+
             logSearchRequest(context.getHandsetId(), intervieweeId, keyword,
                     content, location, isCachedQuery, submissionTime);
         }
-        
+
         context.close();
     }
 
-    public static void logSearchRequest(String handsetId, String intervieweeId,String keyword,
-                                   HashMap<String, String> contentHash, String location, Boolean isCachedQuery, String submissionTime)
+    public static void logSearchRequest(String handsetId, String intervieweeId, String keyword,
+                                        HashMap<String, String> contentHash, String location, Boolean isCachedQuery, String submissionTime)
             throws SQLException, RemoteException, ServiceException {
         String content = null;
 
@@ -107,7 +99,7 @@ public class Search extends ApplabServlet {
             content = CONTENT_NOT_FOUND_LOG_MESSAGE;
         }
         else {
-            content = contentHash.get("content");
+            content = contentHash.get("content").substring(0, 90); // Trim to 90 characters
 
         }
 
@@ -186,7 +178,8 @@ public class Search extends ApplabServlet {
             select.addField(keywordTableName + ".updated");
             select.addField(categoryTableName + ".name"); // Get the category as well
             // We need to do this because keywords are stored with _
-            // TODO: there's a small chance that this replacement will cause us to return wrong content (a_b c <==> a b_c)
+            // TODO: there's a small chance that this replacement will cause us to return wrong content (a_b c <==> a
+            // b_c)
             select.whereEquals("REPLACE(" + keywordTableName + ".keyword, '_', ' ')", "'" + keyword + "'");
             select.whereEquals(keywordTableName + ".isDeleted", "0");
             select.whereEquals(categoryTableName + ".isDeleted", "0");
@@ -195,7 +188,7 @@ public class Search extends ApplabServlet {
             ResultSet resultSet = select.execute();
             if (resultSet.next()) {
                 String content = resultSet.getString("content");
-                if(content != null && content.trim().length() > 0) {
+                if (content != null && content.trim().length() > 0) {
                     content = content.trim().replace("\r\n", "\n");
                 }
                 String attribution = resultSet.getString("attribution");
