@@ -171,11 +171,19 @@ public class GetKeywords extends ApplabServlet {
     // Not the most effecient way of getting total number of rows
     public static int getResultSetSize(ResultSet resultSet) {
         int size = -1;
-
+        int currentRow;
+        
         try {
+            currentRow = resultSet.getRow();
             resultSet.last();
             size = resultSet.getRow();
-            resultSet.beforeFirst();
+            
+            if(currentRow > 0) {
+                resultSet.absolute(currentRow);
+            } 
+            else {
+                resultSet.beforeFirst();
+            }
         }
         catch (SQLException e) {
             return size;
