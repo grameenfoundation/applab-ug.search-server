@@ -91,74 +91,85 @@ public class GetKeywords extends ApplabServlet {
             // Save the totalSize (we get it here before we iterate)
             Integer total = getResultSetSize(resultSet);
 
-            HashMap<String, String> attributes = new HashMap<String, String>();
-            while (resultSet.next()) {
-                attributes.clear();
-
-                if (isFirst) {
-                    // This is the first result, so we use it's updated time as the version
-                    // For this to work, results should be ordered by updated date field descending
-                    String updated = resultSet.getString("keywordUpdated");
-                    String version = "";
-                    if (updated != null && updated.trim().length() > 0) {
-                        version = updated;
+            if(total > 0) {
+                HashMap<String, String> attributes = new HashMap<String, String>();
+                while (resultSet.next()) {
+                    attributes.clear();
+    
+                    if (isFirst) {
+                        // This is the first result, so we use it's updated time as the version
+                        // For this to work, results should be ordered by updated date field descending
+                        String updated = resultSet.getString("version");
+                        String version = "";
+                        if (updated != null && updated.trim().length() > 0) {
+                            version = updated;
+                        }
+                        else {
+                            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            Date date = new Date();
+                            version = dateFormat.format(date);
+                        }
+    
+                        HashMap<String, String> startAttributes = new HashMap<String, String>();
+                        startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
+                        startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
+                        context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "", startAttributes);
+                        
+                        isFirst = false;
+                    }
+    
+                    if (resultSet.getBoolean("isDeleted") || (resultSet.getInt("active") == 0)) {
+                        attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
+                        context.writeStartElement(REMOVE_ELEMENT_NAME, attributes);
+                        context.writeEndElement();
                     }
                     else {
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        Date date = new Date();
-                        version = dateFormat.format(date);
+                        attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
+                        attributes.put(KEYWORD_ATTRIBUTE_NAME, resultSet.getString("keywordValue"));
+                        attributes.put(WEIGHT_ATTRIBUTE_NAME, resultSet.getString("keywordWeight"));
+                        attributes.put(CATEGORY_ATTRIBUTE_NAME, resultSet.getString("categoryName"));
+    
+                        String attribution = resultSet.getString("keywordAttribution");
+                        if (attribution != null && attribution.trim().length() > 0) {
+                            attribution = XmlHelpers.escapeText(attribution.trim().replace("\r\n", "\n"));
+                        }
+                        else {
+                            attribution = "";
+                        }
+                        attributes.put(ATTRIBUTION_ATTRIBUTE_NAME, attribution);
+    
+                        String updated = resultSet.getString("keywordUpdated");
+                        if (updated != null && updated.trim().length() > 0) {
+                            updated = XmlHelpers.escapeText(updated.trim().replace("\r\n", "\n"));
+                        }
+                        else {
+                            updated = "";
+                        }
+                        attributes.put(UPDATED_ATTRIBUTE_NAME, updated);
+    
+                        context.writeStartElement(ADD_ELEMENT_NAME, attributes);
+    
+                        // Content
+                        String content = resultSet.getString("keywordContent");
+                        if (content != null && content.trim().length() > 0) {
+                            content = XmlHelpers.escapeText(content.trim().replace("\r\n", "\n"));
+                            context.writeText(content);
+                        }
+                        context.writeEndElement();
                     }
-
-                    HashMap<String, String> startAttributes = new HashMap<String, String>();
-                    startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
-                    startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
-                    context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "", startAttributes);
-
-                    isFirst = false;
                 }
-
-                if (resultSet.getBoolean("isDeleted")) {
-                    attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
-                    context.writeStartElement(REMOVE_ELEMENT_NAME, attributes);
-                    context.writeEndElement();
-                }
-                else {
-                    attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
-                    attributes.put(KEYWORD_ATTRIBUTE_NAME, resultSet.getString("keywordValue"));
-                    attributes.put(WEIGHT_ATTRIBUTE_NAME, resultSet.getString("keywordWeight"));
-                    attributes.put(CATEGORY_ATTRIBUTE_NAME, resultSet.getString("categoryName"));
-
-                    String attribution = resultSet.getString("keywordAttribution");
-                    if (attribution != null && attribution.trim().length() > 0) {
-                        attribution = XmlHelpers.escapeText(attribution.trim().replace("\r\n", "\n"));
-                    }
-                    else {
-                        attribution = "";
-                    }
-                    attributes.put(ATTRIBUTION_ATTRIBUTE_NAME, attribution);
-
-                    String updated = resultSet.getString("keywordUpdated");
-                    if (updated != null && updated.trim().length() > 0) {
-                        updated = XmlHelpers.escapeText(updated.trim().replace("\r\n", "\n"));
-                    }
-                    else {
-                        updated = "";
-                    }
-                    attributes.put(UPDATED_ATTRIBUTE_NAME, updated);
-
-                    context.writeStartElement(ADD_ELEMENT_NAME, attributes);
-
-                    // Content
-                    String content = resultSet.getString("keywordContent");
-                    if (content != null && content.trim().length() > 0) {
-                        content = XmlHelpers.escapeText(content.trim().replace("\r\n", "\n"));
-                        context.writeText(content);
-                    }
-                    context.writeEndElement();
-                }
+                context.writeEndElement(); // Close the first element
             }
-
-            context.writeEndElement(); // Close the first element
+            else {
+                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date date = new Date();
+                String version = dateFormat.format(date);
+                HashMap<String, String> startAttributes = new HashMap<String, String>();
+                startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
+                startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
+                context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "", startAttributes);
+                context.writeEndElement(); // Close the first element
+            }
         }
         finally {
             if (selectCommand != null) {

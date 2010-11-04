@@ -40,16 +40,21 @@ public class KeywordsContentBuilder {
         selectCommand.innerJoin(DatabaseTable.Category, "category.id = keyword.categoryId");
         selectCommand.addField("keyword.keyword", "keywordValue");
         selectCommand.addField("keyword.isDeleted", "isDeleted");
+        selectCommand.addField("IF(keyword.updated > category.updated, keyword.updated, category.updated)", "version");
+        selectCommand.addField("category.ckwsearch", "active");
+        
         // retrieve only active content
-        selectCommand.whereEquals("category.ckwsearch", "1");
+        // Commented this out, because we also want to pass along items which have since been deactivated
+        // selectCommand.whereEquals("category.ckwsearch", "1");
+        
         // If we have a version fetch only updated keywords.
         if (localVersion.length() > 0) {
-            selectCommand.whereGreaterThan("keyword.updated", "'" + localVersion + "'");
+            selectCommand.where("(keyword.updated < '" + localVersion + "' or category.updated < '" + localVersion + "')");
         }
         else {
             selectCommand.whereNot("keyword.isDeleted");
         }
-        selectCommand.orderBy("keyword.updated desc"); // We do this so that the most recently updated one is on top (this allows us to get the next version number)
+        selectCommand.orderBy("version desc"); // We do this so that the most recently updated one is on top (this allows us to get the next version number)
         return selectCommand.execute();
     }
 

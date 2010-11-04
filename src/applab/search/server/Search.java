@@ -103,6 +103,7 @@ public class Search extends ApplabServlet {
 
         }
 
+        // TODO: Do we want to call out the category if this is a cachedquery? Or leave it as part of the keyword?
         String category = null;
         if (contentHash == null) {
             category = CONTENT_NOT_FOUND_LOG_MESSAGE;
