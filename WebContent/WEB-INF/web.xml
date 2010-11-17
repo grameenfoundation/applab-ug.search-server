@@ -36,4 +36,26 @@
      <servlet-name>GetImages</servlet-name>
      <url-pattern>/getImages</url-pattern>
    </servlet-mapping>
+   
+   <servlet>
+     <description>Allow a person to subscribe to an AgInfo Channel</description>
+     <servlet-name>SubscribeAgInfo</servlet-name>
+     <servlet-class>applab.search.server.SubscribeAgInfo</servlet-class>
+   </servlet>
+
+   <servlet-mapping>
+     <servlet-name>SubscribeAgInfo</servlet-name>
+     <url-pattern>/subscribeAgInfo</url-pattern>
+   </servlet-mapping>
+
+   <servlet>
+     <description>Allow a person to unsubscribe to an AgInfo Channel</description>
+     <servlet-name>UnsubscribeAgInfo</servlet-name>
+     <servlet-class>applab.search.server.UnsubscribeAgInfo</servlet-class>
+   </servlet>
+
+   <servlet-mapping>
+     <servlet-name>UnsubscribeAgInfo</servlet-name>
+     <url-pattern>/unsubscribeAgInfo</url-pattern>
+   </servlet-mapping>
  </web-app>
