@@ -99,7 +99,10 @@ public class Search extends ApplabServlet {
             content = CONTENT_NOT_FOUND_LOG_MESSAGE;
         }
         else {
-            content = contentHash.get("content").substring(0, 90); // Trim to 90 characters
+            content = contentHash.get("content");
+            if (content.length() > 90) {
+                content = content.substring(0, 90);
+            }
 
         }
 
