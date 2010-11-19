@@ -21,13 +21,22 @@ public class SubscribeAgInfo extends ApplabServlet {
 
     public void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
 
-        String phoneNumber = request.getParameter("phoneNumber");
-        String message = request.getParameter("message");
+        String responseMessage = "";
+        try {
+            String phoneNumber = request.getParameter("phoneNumber");
+            String message = request.getParameter("message");
         
-        AgInfoSubscription subscription = new AgInfoSubscription(message, phoneNumber, true);
-        String responseMessage = subscription.processAgInfoSubscription();
-        log(responseMessage);
-        response.getWriter().write(responseMessage);
+            log("Subscribing number: " + phoneNumber + " from channels " + message);
+            AgInfoSubscription subscription = new AgInfoSubscription(message, phoneNumber, true);
+            responseMessage = subscription.processAgInfoSubscription();
+        }
+        catch (Exception e) {
+            responseMessage = "We have failed to subscribe you to your topics. Please try again";
+        }
+        finally {
+            log(responseMessage);
+            response.getWriter().write(responseMessage);
+        }
     }
     
     public static String procesReg(String phoneNumber, String message)

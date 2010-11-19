@@ -31,17 +31,17 @@ public class AgInfoSubscription {
     private final String NO_TOPICS_SUBSCRIBE_STRING = "There are no topics to subscribe to at the moment.";
     private final String NO_TOPICS_UNSUBSCRIBE_STRING = "There are no topics to unsubscribe to at the moment.";
     
-    private final String TOPICS_INFO_SUBSCRIBE_STRING = "Please select TOPICs from list below. For muliple select, seperate with commas e.g. sub 1,4 and send to 178";
-    private final String TOPICS_INFO_UNSUBSCRIBE_STRING = "Please select TOPICs from list below. For muliple select, seperate with commas e.g. unsub 1,4 and send to 178";
+    private final String TOPICS_INFO_SUBSCRIBE_STRING = "Please select TOPICs from list below. For multiple select, separate with commas e.g. sub 1,4 and send to 178";
+    private final String TOPICS_INFO_UNSUBSCRIBE_STRING = "Please select TOPICs from list below. For multiple select, separate with commas e.g. unsub 1,4 and send to 178";
     
-    private final String SUCCESS_HEADER_SUBSCRIBE_STRING = "You have subscribed to the following channels:";
-    private final String SUCCESS_HEADER_UNSUBSCRIBE_STRING = "You have unsubscribed to the following channels:";
+    private final String SUCCESS_HEADER_SUBSCRIBE_STRING = "You have subscribed to the following topics:";
+    private final String SUCCESS_HEADER_UNSUBSCRIBE_STRING = "You have unsubscribed to the following topics:";
     
-    private final String FAIL_HEADER_SUBSCRIBE_STRING = "You have already subscribed to the following channels:";
-    private final String FAIL_HEADER_UNSUBSCRIBE_STRING = "You have already unsubscribed to the following channels:";
+    private final String FAIL_HEADER_SUBSCRIBE_STRING = "You have already subscribed to the following topics:";
+    private final String FAIL_HEADER_UNSUBSCRIBE_STRING = "You have already unsubscribed to the following topics:";
 
-    private final String NO_PERSON_SUBSCRIBE = "Your phone has not been recoginised. Not allowed to subscribe to topics";
-    private final String NO_PERSON_UNSUBSCRIBE = "Your phone has not been recoginised. Not allowed to unsubscribe to topics";
+    private final String NO_PERSON_SUBSCRIBE = "Your phone has not been recognised. Not allowed to subscribe to topics";
+    private final String NO_PERSON_UNSUBSCRIBE = "Your phone has not been recognised. Not allowed to unsubscribe to topics";
 
     private final String FAIL_SUBSCRIBE = "We have failed to subscribe you to any topics.  Please try again";
     private final String FAIL_UNSUBSCRIBE = "We have failed to unsubscribe you to any topics.  Please try again";
@@ -61,7 +61,7 @@ public class AgInfoSubscription {
     public AgInfoSubscription(String requestParameter, String phoneNumber, boolean subscribe) {
 
         this.requestParameter = requestParameter;
-        this.phoneNumber = phoneNumber;
+        this.phoneNumber = "0" + phoneNumber.substring(4);
         this.subscribe = subscribe;
         this.groupsToChange = new ArrayList<String>(); 
         this.groupsNotChanged = new ArrayList<String>(); 
@@ -230,7 +230,6 @@ public class AgInfoSubscription {
     private Person getPersonDetails(String phoneNumber)
             throws ServiceException, InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException {
 
-        
         // Load the Person
         try {
             return Person.loadPhone(phoneNumber);
