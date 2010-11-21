@@ -72,7 +72,7 @@ public class GetImages extends ApplabServlet {
 
         FilenameFilter jpgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.endsWith(".jpg") || name.endsWith(".JPG");
+                return name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg");
             }
         };
 
