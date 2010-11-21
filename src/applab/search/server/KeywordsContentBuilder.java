@@ -49,7 +49,7 @@ public class KeywordsContentBuilder {
         
         // If we have a version fetch only updated keywords.
         if (localVersion.length() > 0) {
-            selectCommand.where("(keyword.updated < '" + localVersion + "' or category.updated < '" + localVersion + "')");
+            selectCommand.where("(keyword.updated > '" + localVersion + "' or category.updated > '" + localVersion + "')");
         }
         else {
             selectCommand.whereNot("keyword.isDeleted");
