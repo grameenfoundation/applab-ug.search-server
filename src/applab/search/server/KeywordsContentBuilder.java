@@ -40,7 +40,9 @@ public class KeywordsContentBuilder {
         selectCommand.innerJoin(DatabaseTable.Category, "category.id = keyword.categoryId");
         selectCommand.addField("keyword.keyword", "keywordValue");
         selectCommand.addField("keyword.isDeleted", "isDeleted");
-        selectCommand.addField("IF(keyword.updated > category.updated, keyword.updated, category.updated)", "version");
+        
+        //TODO this may not be needed so comment out for now + any mention of version field
+        //selectCommand.addField("IF(keyword.updated > category.updated, keyword.updated, category.updated)", "version");
         selectCommand.addField("category.ckwsearch", "active");
         
         // retrieve only active content
@@ -54,7 +56,7 @@ public class KeywordsContentBuilder {
         else {
             selectCommand.whereNot("keyword.isDeleted");
         }
-        selectCommand.orderBy("version desc"); // We do this so that the most recently updated one is on top (this allows us to get the next version number)
+        //selectCommand.orderBy("version desc"); // We do this so that the most recently updated one is on top (this allows us to get the next version number)
         return selectCommand.execute();
     }
 

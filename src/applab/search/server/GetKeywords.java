@@ -85,6 +85,11 @@ public class GetKeywords extends ApplabServlet {
 
         SelectCommand selectCommand = new SelectCommand(DatabaseTable.Keyword);
         Boolean isFirst = true;
+
+        // Just use the time that it is now for the version controlling.
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        String version = dateFormat.format(date);
         try {
             ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(selectCommand, requestXml);
 
@@ -97,18 +102,6 @@ public class GetKeywords extends ApplabServlet {
                     attributes.clear();
     
                     if (isFirst) {
-                        // This is the first result, so we use it's updated time as the version
-                        // For this to work, results should be ordered by updated date field descending
-                        String updated = resultSet.getString("version");
-                        String version = "";
-                        if (updated != null && updated.trim().length() > 0) {
-                            version = updated;
-                        }
-                        else {
-                            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            Date date = new Date();
-                            version = dateFormat.format(date);
-                        }
     
                         HashMap<String, String> startAttributes = new HashMap<String, String>();
                         startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
@@ -131,7 +124,7 @@ public class GetKeywords extends ApplabServlet {
     
                         String attribution = resultSet.getString("keywordAttribution");
                         if (attribution != null && attribution.trim().length() > 0) {
-                            attribution = XmlHelpers.escapeText(attribution.trim().replace("\r\n", "\n"));
+                            attribution = attribution.trim().replace("\r\n", "\n");
                         }
                         else {
                             attribution = "";
@@ -152,7 +145,7 @@ public class GetKeywords extends ApplabServlet {
                         // Content
                         String content = resultSet.getString("keywordContent");
                         if (content != null && content.trim().length() > 0) {
-                            content = XmlHelpers.escapeText(content.trim().replace("\r\n", "\n"));
+                            content = content.trim().replace("\r\n", "\n");
                             context.writeText(content);
                         }
                         context.writeEndElement();
@@ -161,9 +154,6 @@ public class GetKeywords extends ApplabServlet {
                 context.writeEndElement(); // Close the first element
             }
             else {
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = new Date();
-                String version = dateFormat.format(date);
                 HashMap<String, String> startAttributes = new HashMap<String, String>();
                 startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
                 startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
