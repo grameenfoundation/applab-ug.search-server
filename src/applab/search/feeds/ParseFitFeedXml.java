@@ -202,18 +202,15 @@ public class ParseFitFeedXml {
                     if (keywordString != null && contentString != null) {
                         if (!updateKeyword(keywordString, contentString, keyword)) {
                             if (!insertNewKeyword(keyword, keywordString, contentString)) {
-System.out.println("HERE0");
                                 success = false;
                             }
                         }
                     }
                     else {
-System.out.println("HERE1");
                         success =  false;
                     }
                 }
                 else {
-System.out.println("HERE2");
                     success = false;
                 }
             }
@@ -245,7 +242,7 @@ System.out.println("HERE2");
         queryText.append(DatabaseHelpers.getTimestamp(new java.util.Date()));
         queryText.append("'");
         queryText.append(" WHERE");
-        queryText.append(" keyword LIKE '" + keywordBase +"'");
+        queryText.append(" keyword LIKE '%" + keywordBase +"%'");
         queryText.append(" AND updated < '");
         queryText.append(DatabaseHelpers.getTimestamp(now.getTime()));
         queryText.append("'");
@@ -257,7 +254,7 @@ System.out.println("HERE2");
         }
         catch (Exception e){
 
-            // Do nothing as the finally that calls this will close the coneections
+            // Do nothing as the finally that calls this will close the connections
             success = false;
         }
         finally {
