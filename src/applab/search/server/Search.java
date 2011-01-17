@@ -32,7 +32,6 @@ public class Search extends ApplabServlet {
 
     private static final long serialVersionUID = 1L;
     public final static String NAMESPACE = "http://schemas.applab.org/2010/07/search";
-    private final static String RESPONSE_ELEMENT_NAME = "SearchResponse";
     private final static String CACHED_CONTENT_LOG_MESSAGE = "Cached Content. Inbox access log.";
     private final static String CONTENT_NOT_FOUND_LOG_MESSAGE = "Content Not Found";
     private final static String CONTENT_NOT_FOUND_RESPONSE_MESSAGE = "No content could be associated with your keyword. \n Try downloading an updated list of keywords and repeating your search. \nIf your problem persists, please report this error.";

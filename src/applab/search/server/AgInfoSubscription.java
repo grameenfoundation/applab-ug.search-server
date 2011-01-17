@@ -8,7 +8,6 @@ import java.util.HashMap;
 import javax.xml.rpc.ServiceException;
 
 import applab.Person;
-import applab.Phone;
 import applab.server.SalesforceProxy;
 
 import com.sforce.soap.enterprise.DeleteResult;

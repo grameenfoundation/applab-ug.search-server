@@ -3,21 +3,19 @@ package applab.search.server;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import applab.server.*;
+import applab.server.ApplabConfiguration;
+import applab.server.ApplabServlet;
+import applab.server.HashHelpers;
+import applab.server.ServletRequestContext;
 
 /**
  * Server method that returns the keywords requested by the client.
