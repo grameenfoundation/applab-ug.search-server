@@ -19,6 +19,7 @@ import applab.server.DatabaseTable;
 import applab.server.SalesforceProxy;
 import applab.server.SelectCommand;
 import applab.server.ServletRequestContext;
+import applab.server.WebAppId;
 
 import com.sforce.soap.enterprise.LoginResult;
 import com.sforce.soap.enterprise.SessionHeader;
@@ -39,6 +40,7 @@ public class Search extends ApplabServlet {
     private final static String INTERVIEWEE_ID_PARAM = "intervieweeId";
     private final static String LOG_ONLY_PARAM = "log";
     private final static String LOCATION_PARAM = "location";
+    private final static String CATEGORY_PARAM = "category";
     private final static String HANDSET_SUBMISSION_TIME_PARAM = "submissionTime";
 
     /**
@@ -60,6 +62,7 @@ public class Search extends ApplabServlet {
         Boolean isCachedQuery = (request.getParameter(LOG_ONLY_PARAM) != null);
         String intervieweeId = request.getParameter(INTERVIEWEE_ID_PARAM);
         String location = request.getParameter(LOCATION_PARAM);
+        String category = request.getParameter(CATEGORY_PARAM);
         String submissionTime = request.getParameter(HANDSET_SUBMISSION_TIME_PARAM);
 
         if (keyword == null || intervieweeId == null || location == null || submissionTime == null) {
@@ -71,6 +74,9 @@ public class Search extends ApplabServlet {
             intervieweeId = URLDecoder.decode(intervieweeId, "UTF-8");
             location = URLDecoder.decode(location, "UTF-8");
             submissionTime = URLDecoder.decode(submissionTime, "UTF-8");
+            if (category != null) {
+                category = URLDecoder.decode(category, "UTF-8");
+            }
 
             HashMap<String, String> content = null;
 
@@ -80,14 +86,15 @@ public class Search extends ApplabServlet {
             }
 
             logSearchRequest(context.getHandsetId(), intervieweeId, keyword,
-                    content, location, isCachedQuery, submissionTime);
+                    content, location, isCachedQuery, submissionTime, context.getSubmissionLocation(), category);
         }
 
         context.close();
     }
 
     public static void logSearchRequest(String handsetId, String intervieweeId, String keyword,
-                                        HashMap<String, String> contentHash, String location, Boolean isCachedQuery, String submissionTime)
+                                        HashMap<String, String> contentHash, String location, Boolean isCachedQuery,
+                                        String submissionTime, String submissionLocation, String category)
             throws SQLException, RemoteException, ServiceException {
         String content = null;
 
@@ -106,13 +113,13 @@ public class Search extends ApplabServlet {
         }
 
         // TODO: Do we want to call out the category if this is a cachedquery? Or leave it as part of the keyword?
-        String category = null;
-        if (contentHash == null) {
-            category = CONTENT_NOT_FOUND_LOG_MESSAGE;
-        }
-        else {
-            category = contentHash.get(DatabaseTable.Category.getTableName() + ".name");
-        }
+        // String category = null;
+        // if (contentHash == null) {
+        // category = CONTENT_NOT_FOUND_LOG_MESSAGE;
+        // }
+        // else {
+        // category = contentHash.get(DatabaseTable.Category.getTableName() + ".name");
+        // }
 
         // Save hit to SF
 
@@ -120,12 +127,12 @@ public class Search extends ApplabServlet {
         CreateSearchLogEntryBindingStub serviceStub = (CreateSearchLogEntryBindingStub)serviceLocator.getCreateSearchLogEntry();
 
         // Use soap api to login and get session info
-
         SforceServiceLocator soapServiceLocator = new SforceServiceLocator();
-        soapServiceLocator.setSoapEndpointAddress(ApplabConfiguration.getSalesforceAddress());
+        soapServiceLocator.setSoapEndpointAddress((String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforceAddress", ""));
         SoapBindingStub binding = (SoapBindingStub)soapServiceLocator.getSoap();
-        LoginResult loginResult = binding.login(ApplabConfiguration.getSalesforceUsername(), ApplabConfiguration.getSalesforcePassword()
-                + ApplabConfiguration.getSalesforceToken());
+        LoginResult loginResult = binding.login((String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforceUsername", ""),
+                (String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforcePassword", "")
+                        + (String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforceToken", ""));
         SessionHeader sessionHeader = new SessionHeader(loginResult.getSessionId());
 
         // Share the session info with our webservice
@@ -145,10 +152,24 @@ public class Search extends ApplabServlet {
 
         // Get the location data
         Location locationData = Location.parseLocation(location);
+        Location submissionData = Location.parseLocation(submissionLocation);
+
+        // Check that we got the location from the search. If not use the one that is in the header
+        if (locationData.latitude == 0) {
+            locationData = submissionData;
+        }
         searchLogEntry.setLatitude(locationData.latitude.toString());
         searchLogEntry.setLongitude(locationData.longitude.toString());
         searchLogEntry.setAltitude(locationData.altitude.toString());
         searchLogEntry.setAccuracy(locationData.accuracy.toString());
+
+        // Get the location that the search was submitted from.
+        searchLogEntry.setSubmissionAccuracy(submissionData.accuracy.toString());
+        searchLogEntry.setSubmissionAltitude(submissionData.altitude.toString());
+        searchLogEntry.setSubmissionLatitude(submissionData.latitude.toString());
+        searchLogEntry.setSubmissionLongitude(submissionData.longitude.toString());
+        searchLogEntry.setSubmissionGPSTime(String.valueOf(submissionData.timestamp));
+System.out.println("Category: " + category);
 
         searchLogEntry.setQuery(keyword);
 
@@ -180,6 +201,7 @@ public class Search extends ApplabServlet {
             select.addField(keywordTableName + ".attribution");
             select.addField(keywordTableName + ".updated");
             select.addField(categoryTableName + ".name"); // Get the category as well
+
             // We need to do this because keywords are stored with _
             // TODO: there's a small chance that this replacement will cause us to return wrong content (a_b c <==> a
             // b_c)

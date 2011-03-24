@@ -52,7 +52,7 @@ public class GetImages extends ApplabServlet {
             throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException {
         try {
             // Document requestXml = context.getRequestBodyAsXml();
-            imageFilePath = ApplabConfiguration.getSearchImagesPath();
+            imageFilePath = (String)ApplabConfiguration.getConfigParameter(context.getContextName(), "searchImagesPath", "/var/www/vhosts/default/htdocs/search.images");
             writeResponse(context);
         }
         finally {
@@ -66,7 +66,7 @@ public class GetImages extends ApplabServlet {
 
         // 1: Read directory
         File imagesDirectory = new File(imageFilePath);
-        String imageBaseUrl = ApplabConfiguration.getSearchImagesBaseUrl();
+        String imageBaseUrl = (String)ApplabConfiguration.getConfigParameter(context.getContextName(), "searchImagesBaseUrl", "");
 
         FilenameFilter jpgFilter = new FilenameFilter() {
             public boolean accept(File dir, String name) {

@@ -25,6 +25,7 @@ import applab.search.server.SearchSalesforceProxy;
 import applab.server.DatabaseHelpers;
 import applab.server.DatabaseId;
 import applab.server.DatabaseTable;
+import applab.server.WebAppId;
 import applab.server.XmlHelpers;
 
 import com.sforce.soap.enterprise.fault.InvalidIdFault;
@@ -267,7 +268,7 @@ public class ParseFitFeedXml {
     private void initDatabaseConnection()
             throws ClassNotFoundException, SQLException {
 
-        this.connection = DatabaseHelpers.createConnection(DatabaseId.Search);
+        this.connection = DatabaseHelpers.createConnection(WebAppId.search);
 
         // Prepare the insert statement
         StringBuilder insertText = new StringBuilder();
