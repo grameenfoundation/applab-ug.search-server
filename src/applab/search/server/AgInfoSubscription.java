@@ -142,7 +142,6 @@ public class AgInfoSubscription {
         queryText.append("AND Status__c = 'Active' ");
         queryText.append("ORDER BY Display_Order__c");
         QueryResult query = binding.query(queryText.toString());
-        SalesforceProxy.disposeBinding(binding);
 
         HashMap<String, Subscription_Topic__c> topics = new HashMap<String, Subscription_Topic__c>();
         if (query.getSize() > 0) {
@@ -173,7 +172,6 @@ public class AgInfoSubscription {
         queryText.append("AND Status__c = 'Active' ");
         queryText.append("ORDER BY Display_Order__c");
         QueryResult query = binding.query(queryText.toString());
-        SalesforceProxy.disposeBinding(binding);
 
         HashMap<String, Subscription_Topic__c> topics = new HashMap<String, Subscription_Topic__c>();
         if (query.getSize() > 0) {
@@ -198,7 +196,6 @@ public class AgInfoSubscription {
         queryText.append("WHERE Status__c = 'Active' ");
         queryText.append("ORDER BY Display_Order__c");
         QueryResult query = binding.query(queryText.toString());
-        SalesforceProxy.disposeBinding(binding);
 
         StringBuilder textMessage = new StringBuilder();
         if (query.getSize() > 0) {
@@ -260,7 +257,6 @@ public class AgInfoSubscription {
         person[0].setRaw_Mobile_Number__c(phoneNumber);
 
         SaveResult saveResult[] = binding.create(person);
-        SalesforceProxy.disposeBinding(binding);
         if (!saveResult[0].isSuccess()) {
             return null;
         }
@@ -301,11 +297,9 @@ public class AgInfoSubscription {
         if (this.groupsToChange.size() > 0) {
             SaveResult[] saveResult = binding.create(associations.toArray(new Person_Group_Association__c[0]));
             if (saveResult.length == 0) {
-                SalesforceProxy.disposeBinding(binding);
                 return false;
             }
         }
-        SalesforceProxy.disposeBinding(binding);
         return true;
     }
     
@@ -332,11 +326,9 @@ public class AgInfoSubscription {
             }
         }
         if (this.groupsToChange.size() == 0 && this.groupsNotChanged.size() == 0) {
-            SalesforceProxy.disposeBinding(binding);
             return false;
         }
         DeleteResult deleteResult[] = binding.delete(personGroupAssociationIds.toArray(new String[0]));
-        SalesforceProxy.disposeBinding(binding);
         if (this.groupsToChange.size() > 0) {
             if (deleteResult.length == 0) {
                 return false;
