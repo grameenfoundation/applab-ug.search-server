@@ -169,7 +169,6 @@ public class Search extends ApplabServlet {
         searchLogEntry.setSubmissionLatitude(submissionData.latitude.toString());
         searchLogEntry.setSubmissionLongitude(submissionData.longitude.toString());
         searchLogEntry.setSubmissionGPSTime(String.valueOf(submissionData.timestamp));
-System.out.println("Category: " + category);
 
         searchLogEntry.setQuery(keyword);
 
