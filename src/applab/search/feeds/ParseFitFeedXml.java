@@ -81,7 +81,7 @@ public class ParseFitFeedXml {
         HttpResponse response = request.getResponse();
         return response.getBodyAsString();
     }
-    
+
     private boolean parseFitFeedXml(String xml)
             throws SAXException, IOException, ParserConfigurationException, ParseException {
 
@@ -94,7 +94,7 @@ public class ParseFitFeedXml {
         
         return true;
     }
-    
+
     private void parseRss(Element rootNode) throws ParseException {
         
         for (Node childNode = rootNode.getFirstChild(); childNode != null; childNode = childNode.getNextSibling()) {
