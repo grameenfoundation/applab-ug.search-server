@@ -15,6 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 import javax.xml.transform.TransformerException;
 import applab.server.ApplabServlet;
+import applab.server.DatabaseHelpers;
 import applab.server.ServletRequestContext;
 import applab.server.XmlHelpers;
 import java.util.ArrayList;
@@ -63,8 +64,11 @@ public class UpdateIconLocationsFeed extends ApplabServlet {
 
         locationRequests = new ArrayList<LocationRequest>();
 
-        ParseIconLocationsFeedXml feed = new ParseIconLocationsFeedXml(iconLocationIdsFeedUrl);
+        log("Updating Icon Location Ids : "+DatabaseHelpers.formatDateTime(new java.util.Date()));
 
+        ParseIconLocationsFeedXml feed = new ParseIconLocationsFeedXml(iconLocationIdsFeedUrl);
+        feed.parseLocationsXml();
+        
         Document requestXml = XmlHelpers.parseXml(request.getReader());
         parseRequest(requestXml);
 
@@ -74,21 +78,29 @@ public class UpdateIconLocationsFeed extends ApplabServlet {
         context.writeStartElement(RESPONSE_ELEMENT_NAME);
 
         for (LocationRequest locationRequest : locationRequests) {
-            context.writeStartElement(ROW_ELEMENT_NAME);
 
-            context.writeStartElement(LocationRequestElement.subcounty_id.toString());
-            context.print(locationRequest.getSubcountyId());
-            context.writeEndElement();
-
-            context.writeStartElement(LOCATION_ID_ELEMENT_NAME);
-
+            if (locationRequest.getLatitude() == null || locationRequest.getLongitude() == null) {
+                continue;
+            }
             // Get closest location in ICON Weather System
             Location location = feed.findClosestLocationId(locationRequest.getLatitude(), locationRequest.getLongitude());
-            context.print(location.getLocationId());
+            if (location != null) {
+                if (location.getLocationId() != null && location.getLocationId() != "") {
+                    context.writeStartElement(ROW_ELEMENT_NAME);
 
-            context.writeEndElement();
+                    context.writeStartElement(LocationRequestElement.subcounty_id.toString());
+                    context.print(locationRequest.getSubcountyId());
+                    context.writeEndElement();
 
-            context.writeEndElement();
+                    context.writeStartElement(LOCATION_ID_ELEMENT_NAME);
+
+                    context.print(location.getLocationId());
+
+                    context.writeEndElement();
+
+                    context.writeEndElement();
+                }
+            }
         }
         context.writeEndElement();
         context.println("");
@@ -185,8 +197,8 @@ public class UpdateIconLocationsFeed extends ApplabServlet {
     }
 
     private enum LocationRequestElement {
-          subcounty_id, 
-          longitude, 
+          subcounty_id,
+          longitude,
           latitude;
     }
 

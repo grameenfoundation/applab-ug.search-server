@@ -57,11 +57,10 @@ public class ParseIconLocationsFeedXml {
             ParserConfigurationException, ParseException, TransformerException {
 
         String xml = getIconLocationsXml();
-
+        
         if (xml == null) {
             return null;
         }
-
         if (cleanUpLocationsXml(xml)) {
             return this.locations;
         }
@@ -95,18 +94,17 @@ public class ParseIconLocationsFeedXml {
             System.out.println(location.getLatitude());
         }
         catch (Exception exc) {
-            exc.printStackTrace();
             return null;
         }
 
         // Since this gets called outside the class, it is necessary to reload the collection
-        ArrayList<Location> allLocations = parseLocationsXml();
+       // ArrayList<Location> allLocations = parseLocationsXml();
 
         double minimumDistance = 0;
         double currentDistance = 0;
         Location nearestLocation = new Location();
 
-        for (Location currentLocation : allLocations) {
+        for (Location currentLocation : this.locations) {
             // call get Distance
             currentDistance = getDistance(location, currentLocation);
             

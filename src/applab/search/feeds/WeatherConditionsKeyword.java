@@ -226,7 +226,7 @@ public class WeatherConditionsKeyword {
 
     public String generateKeyword() {
 
-        if (this.region == null || this.district == null || this.subcounty == null) {
+        if (this.region == null || this.region =="" || this.district == null || this.district == "" || this.subcounty == null|| this.subcounty == "") {
             return null;
         }
         StringBuilder keyword = new StringBuilder();

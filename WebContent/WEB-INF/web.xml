@@ -56,9 +56,9 @@
 		<init-param>
 			<description>The id in the database for this market_information category.</description>
 			<param-name>categoryId</param-name>
-			<!-- Test setting -->
-			<param-value>63</param-value>
-			<!-- Live setting <param-value>64</param-value> -->
+			 
+			<!-- Test setting<param-value>63</param-value>-->
+			<param-value>64</param-value>
 		</init-param>
 		<init-param>
 			<description>The url for the Fit feed</description>
