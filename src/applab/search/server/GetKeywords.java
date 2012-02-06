@@ -136,7 +136,7 @@ public class GetKeywords extends ApplabServlet {
 								.getString("keywordAttribution"));
 						String category = replaceEscapeCharacters(resultSet
 								.getString("categoryName"));
-						
+
 						attributes.put(KEYWORD_ATTRIBUTE_NAME, keywordValue);
 						attributes.put(WEIGHT_ATTRIBUTE_NAME,
 								resultSet.getString("keywordWeight"));
@@ -218,7 +218,7 @@ public class GetKeywords extends ApplabServlet {
 	 * @return edited keyword
 	 */
 	private static String replaceEscapeCharacters(String keyword) {
-		
+
 		keyword = keyword.replace("\"", "&quot;");
 		keyword = keyword.replace("\'", "&quot;");
 		keyword = keyword.replace("<", " &lt;");
