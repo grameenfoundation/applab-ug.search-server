@@ -38,7 +38,7 @@
 		<link>
 			<name>WebContent/WEB-INF/application.xml</name>
 			<type>1</type>
-			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/Common%20Server/src/application.xml</locationURI>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/CommonServer/src/application.xml</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
