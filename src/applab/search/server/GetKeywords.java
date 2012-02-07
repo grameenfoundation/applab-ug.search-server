@@ -50,15 +50,18 @@ public class GetKeywords extends ApplabServlet {
     //
     // returns a response like:
     // <?xml version="1.0"?>
-    // <GetKeywordsResponse xmlns="http://schemas.applab.org/2010/07/search" version="2010-07-20 18:34:36" total="25">
+    // <GetKeywordsResponse xmlns="http://schemas.applab.org/2010/07/search"
+    // version="2010-07-20 18:34:36" total="25">
     // <add id="23219" category="Farm_Inputs">Sironko Sisiyi Seeds</add>
     // <add id="39243" category="Animals">Bees Pests Wax_moths<add/>
     // <remove id="45" />
     // </GetKeywordsResponse>
 
     @Override
-    protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-            throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException {
+    protected void doApplabPost(HttpServletRequest request,
+                                HttpServletResponse response, ServletRequestContext context)
+            throws IOException, SAXException, ParserConfigurationException,
+            ClassNotFoundException, SQLException {
         try {
             Document requestXml = context.getRequestBodyAsXml();
             GetKeywords.writeResponse(requestXml, context);
@@ -79,8 +82,9 @@ public class GetKeywords extends ApplabServlet {
      * @throws ClassNotFoundException
      * @throws IOException
      */
-    public static void writeResponse(Document requestXml, ServletRequestContext context) throws SQLException, ClassNotFoundException,
-            IOException {
+    public static void writeResponse(Document requestXml,
+                                     ServletRequestContext context) throws SQLException,
+            ClassNotFoundException, IOException {
         context.writeXmlHeader();
 
         SelectCommand selectCommand = new SelectCommand(DatabaseTable.Keyword);
@@ -91,57 +95,74 @@ public class GetKeywords extends ApplabServlet {
         Date date = new Date();
         String version = dateFormat.format(date);
         try {
-            ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(selectCommand, requestXml);
+            ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(
+                    selectCommand, requestXml);
 
             // Save the totalSize (we get it here before we iterate)
             Integer total = getResultSetSize(resultSet);
 
-            if(total > 0) {
+            if (total > 0) {
                 HashMap<String, String> attributes = new HashMap<String, String>();
                 while (resultSet.next()) {
                     attributes.clear();
-    
+
                     if (isFirst) {
-    
                         HashMap<String, String> startAttributes = new HashMap<String, String>();
                         startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
-                        startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
-                        context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "", startAttributes);
-                        
+                        startAttributes.put(TOTAL_ATTRIBUTE_NAME,
+                                total.toString());
+                        context.writeStartElement(RESPONSE_ELEMENT_NAME,
+                                NAMESPACE, "", startAttributes);
+
                         isFirst = false;
                     }
-    
-                    if (resultSet.getBoolean("isDeleted") || (resultSet.getInt("active") == 0)) {
-                        attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
-                        context.writeStartElement(REMOVE_ELEMENT_NAME, attributes);
+
+                    if (resultSet.getBoolean("isDeleted")
+                            || (resultSet.getInt("active") == 0)) {
+                        attributes.put(ID_ATTRIBUTE_NAME,
+                                resultSet.getString("keywordId"));
+                        context.writeStartElement(REMOVE_ELEMENT_NAME,
+                                attributes);
                         context.writeEndElement();
                     }
                     else {
-                        attributes.put(ID_ATTRIBUTE_NAME, resultSet.getString("keywordId"));
-                        attributes.put(KEYWORD_ATTRIBUTE_NAME, resultSet.getString("keywordValue"));
-                        attributes.put(WEIGHT_ATTRIBUTE_NAME, resultSet.getString("keywordWeight"));
-                        attributes.put(CATEGORY_ATTRIBUTE_NAME, resultSet.getString("categoryName"));
-    
-                        String attribution = resultSet.getString("keywordAttribution");
-                        if (attribution != null && attribution.trim().length() > 0) {
-                            attribution = attribution.trim().replace("\r\n", "\n");
+                        attributes.put(ID_ATTRIBUTE_NAME,
+                                resultSet.getString("keywordId"));
+
+                        // Replace XML escape characters
+                        String keywordValue = replaceEscapeCharacters(resultSet
+                                .getString("keywordValue"));
+                        String attribution = replaceEscapeCharacters(resultSet
+                                .getString("keywordAttribution"));
+                        String category = replaceEscapeCharacters(resultSet
+                                .getString("categoryName"));
+                        attributes.put(KEYWORD_ATTRIBUTE_NAME, keywordValue);
+                        attributes.put(WEIGHT_ATTRIBUTE_NAME,
+                                resultSet.getString("keywordWeight"));
+                        attributes.put(CATEGORY_ATTRIBUTE_NAME, category);
+
+                        if (attribution != null
+                                && attribution.trim().length() > 0) {
+                            attribution = attribution.trim().replace("\r\n",
+                                    "\n");
                         }
                         else {
                             attribution = "";
                         }
                         attributes.put(ATTRIBUTION_ATTRIBUTE_NAME, attribution);
-    
+
                         String updated = resultSet.getString("keywordUpdated");
                         if (updated != null && updated.trim().length() > 0) {
-                            updated = XmlHelpers.escapeText(updated.trim().replace("\r\n", "\n"));
+                            updated = XmlHelpers.escapeText(updated.trim()
+                                    .replace("\r\n", "\n"));
                         }
                         else {
                             updated = "";
                         }
                         attributes.put(UPDATED_ATTRIBUTE_NAME, updated);
-    
+
                         context.writeStartElement(ADD_ELEMENT_NAME, attributes);
-    
+
                         // Content
                         String content = resultSet.getString("keywordContent");
                         if (content != null && content.trim().length() > 0) {
@@ -157,7 +178,8 @@ public class GetKeywords extends ApplabServlet {
                 HashMap<String, String> startAttributes = new HashMap<String, String>();
                 startAttributes.put(VERSION_ATTRIBUTE_NAME, version);
                 startAttributes.put(TOTAL_ATTRIBUTE_NAME, total.toString());
-                context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "", startAttributes);
+                context.writeStartElement(RESPONSE_ELEMENT_NAME, NAMESPACE, "",
+                        startAttributes);
                 context.writeEndElement(); // Close the first element
             }
         }
@@ -173,15 +195,15 @@ public class GetKeywords extends ApplabServlet {
     public static int getResultSetSize(ResultSet resultSet) {
         int size = -1;
         int currentRow;
-        
+
         try {
             currentRow = resultSet.getRow();
             resultSet.last();
             size = resultSet.getRow();
-            
-            if(currentRow > 0) {
+
+            if (currentRow > 0) {
                 resultSet.absolute(currentRow);
-            } 
+            }
             else {
                 resultSet.beforeFirst();
             }
@@ -193,4 +215,19 @@ public class GetKeywords extends ApplabServlet {
         return size;
     }
 
+    /**
+     * Replaces escape characters in keyword in conformance with XML These include: " - &quot; ' - &apos; < - &lt; > -
+     * &gt; & - &amp;
+     * 
+     * @param keyword
+     * @return edited keyword
+     */
+    private static String replaceEscapeCharacters(String keyword) {
+        keyword = keyword.replace("\"", "&quot;");
+        keyword = keyword.replace("\'", "&quot;");
+        keyword = keyword.replace("<", " &lt;");
+        keyword = keyword.replace(">", "&gt;");
+        keyword = keyword.replace("&", "&amp;");
+        return keyword;
+    }
 }
