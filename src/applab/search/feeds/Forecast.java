@@ -23,16 +23,16 @@ public class Forecast {
         return lowTemperature;
     }
 
-    public void setLowTemperature(String lowTemperature) {
-        this.lowTemperature = Double.parseDouble(lowTemperature);
-    }
+    public void setLowTemperature(String lowTemperature) {        
+        this.lowTemperature = convertStringToDouble(lowTemperature);
+    }       
 
     public double getHighTemperature() {
         return highTemperature;
     }
 
     public void setHighTemperature(String highTemperature) {
-        this.highTemperature = Double.parseDouble(highTemperature);
+        this.highTemperature = convertStringToDouble(highTemperature);
     }
 
     public String getConditions() {
@@ -48,7 +48,7 @@ public class Forecast {
     }
 
     public void setPrecipitation(String precipitation) {
-        this.precipitation = Double.parseDouble(precipitation);
+        this.precipitation = convertStringToDouble(precipitation);
     }
 
     public double getMaximumWindSpeed() {
@@ -56,7 +56,7 @@ public class Forecast {
     }
 
     public void setMaximumWindSpeed(String maximumWindSpeed) {
-        this.maximumWindSpeed = Double.parseDouble(maximumWindSpeed);
+        this.maximumWindSpeed = convertStringToDouble(maximumWindSpeed);
     }
 
     public String getWindDirection() {
@@ -81,10 +81,18 @@ public class Forecast {
 
     public void setRainChance(String rainChance) {
         try {
-            this.rainChance = Double.parseDouble(rainChance);
+            this.rainChance = convertStringToDouble(rainChance);
         }
         catch (NumberFormatException exc) {
 
+        }
+    }
+    private double convertStringToDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        }
+        catch (NumberFormatException ex) {
+            return -1;
         }
     }
 }
