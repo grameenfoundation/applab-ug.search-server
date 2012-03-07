@@ -107,4 +107,14 @@
 		<servlet-name>UpdateIconWeatherFeed</servlet-name>
 		<url-pattern>/updateIconWeatherFeed</url-pattern>
 	</servlet-mapping>
+	<servlet>
+    <description>Servlet to get images from Salesforce</description>
+    <display-name>GetImagesFromSalesforce</display-name>
+    <servlet-name>GetImagesFromSalesforce</servlet-name>
+    <servlet-class>applab.search.server.GetImagesFromSalesforce</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetImagesFromSalesforce</servlet-name>
+    <url-pattern>/getsfimages</url-pattern>
+  </servlet-mapping>
 </web-app>
