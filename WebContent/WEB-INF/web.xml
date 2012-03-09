@@ -100,4 +100,14 @@
     <servlet-name>UpdateIconWeatherFeed</servlet-name>
     <url-pattern>/updateIconWeatherFeed</url-pattern>
   </servlet-mapping>
-  </web-app>
+  <servlet>
+    <description></description>
+    <display-name>GetSearchKeywords</display-name>
+    <servlet-name>GetSearchKeywords</servlet-name>
+    <servlet-class>applab.search.server.GetSearchKeywords</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetSearchKeywords</servlet-name>
+    <url-pattern>/getsearchkeywords</url-pattern>
+  </servlet-mapping>
+</web-app>
