@@ -109,8 +109,8 @@
   <servlet-mapping>
     <servlet-name>GetSearchKeywords</servlet-name>
     <url-pattern>/getsearchkeywords</url-pattern>
-	</servlet-mapping>
-	<servlet>
+  </servlet-mapping>
+  <servlet>
     <description>Servlet to get images from Salesforce</description>
     <display-name>GetImagesFromSalesforce</display-name>
     <servlet-name>GetImagesFromSalesforce</servlet-name>
@@ -119,5 +119,15 @@
   <servlet-mapping>
     <servlet-name>GetImagesFromSalesforce</servlet-name>
     <url-pattern>/getsfimages</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>Gets Available Farmer Ids from Salesforce</description>
+    <display-name>GetFarmerIds</display-name>
+    <servlet-name>GetFarmerIds</servlet-name>
+    <servlet-class>applab.search.server.GetFarmerIds</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetFarmerIds</servlet-name>
+    <url-pattern>/getFarmerIds</url-pattern>
   </servlet-mapping>
 </web-app>
