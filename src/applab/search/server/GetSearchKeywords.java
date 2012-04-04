@@ -11,6 +11,9 @@ import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +22,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 
 import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.sforce.soap.enterprise.LoginResult;
@@ -38,7 +43,9 @@ import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsServiceLocato
 public class GetSearchKeywords extends ApplabServlet {
 
     private static final long serialVersionUID = 1L;
-    private final static String IMEI = "Imei";
+    private final static String IMEI = "x-Imei";
+    private final static String LAST_UPDATE_DATE = "localKeywordsVersion";
+    private final static String MENU_IDS = "menuIds";
 
     @Override
     protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
@@ -56,30 +63,46 @@ public class GetSearchKeywords extends ApplabServlet {
             log("Reached post method");
             // get current date & time to stipulate version
             // this is done before processing to prevent timelags due to latency and processing
-            DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-            Calendar calendar = Calendar.getInstance();
-            String currentVersion = dateFormat.format(calendar.getTime());
-
+                     
+            SimpleDateFormat dateFormat =
+                    new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date = new Date();
+            String currentVersion = dateFormat.format(date);
             // set up saleforce authentication to access webservice
             UpdateKeywordsBindingStub serviceStub = setupSalesforceAuthentication();
-
-            String imei = request.getParameter("x-Imei");
-            String dateString = context.getRequestBodyAsXml().getChildNodes().item(2).getNodeValue();
-            String[] menuIds = context.getRequestBodyAsXml().getChildNodes().item(3).getNodeValue().split(",");
-
+                    
+            String imei = request.getHeader(IMEI);
+            log("x-Imei: " + imei);
+            
+            Document requestXml = context.getRequestBodyAsXml();
+            NodeList nodeList = requestXml.getElementsByTagName(LAST_UPDATE_DATE);
+            String dateString = nodeList.item(0).getTextContent();
+            log("date String: " + dateString);
+            
+            NodeList menuList = requestXml.getElementsByTagName(MENU_IDS);
+            String[] menuIds = menuList.item(0).getTextContent().split(",");
+            
+            if (menuIds != null && menuIds.length != 0) {
+                log("menu Ids: " + menuIds[0]); 
+            }
+            else {
+                menuIds = new String[0];
+                log("No previous menu Ids");
+            }                   
+           
             // build Json request.
             JsonRequest req = new JsonRequest();
             req.setImei(imei);
             req.setLastUpdatedDate(dateString);
             req.setMenuIds(menuIds);
 
-            log(req.getImei() + " " + req.getLastUpdatedDate());
             String[] jsonResults = serviceStub.getKeywords(req);
 
             // build welformed response for client
             String json = buildJsonResponse(jsonResults, currentVersion);
             PrintWriter out = response.getWriter();
             out.println(json);
+            log("Finished sending keywords");
         }
         catch (DOMException e) {
             // TODO Auto-generated catch block
@@ -148,4 +171,10 @@ public class GetSearchKeywords extends ApplabServlet {
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/UpdateKeywords", "SessionHeader", sessionHeader);
         return serviceStub;
     }
+    
+   /* private String getSalesforceFormattedDateString(String searchDateString) {
+        
+        String salesforceDate = "";
+        salesforceDate = searchDateString.substring(0, searchDateString.length() - 4) + "";
+    } */
 }
