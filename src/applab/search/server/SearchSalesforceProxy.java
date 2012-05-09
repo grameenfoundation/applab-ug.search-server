@@ -16,16 +16,18 @@ import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.MalformedQueryFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.enterprise.sobject.Market__c;
+import com.sforce.soap.enterprise.sobject.Person__c;
 
 public class SearchSalesforceProxy extends SalesforceProxy {
 
-    public SearchSalesforceProxy() 
+    public SearchSalesforceProxy()
             throws ServiceException, InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException {
         super();
     }
 
     public HashMap<String, String> getRegionMap()
-            throws InvalidSObjectFault, MalformedQueryFault, InvalidFieldFault, InvalidIdFault, UnexpectedErrorFault, InvalidQueryLocatorFault, RemoteException {
+            throws InvalidSObjectFault, MalformedQueryFault, InvalidFieldFault, InvalidIdFault, UnexpectedErrorFault,
+            InvalidQueryLocatorFault, RemoteException {
 
         HashMap<String, String> regionMap = new HashMap<String, String>();
         StringBuilder queryText = new StringBuilder();
@@ -37,14 +39,39 @@ public class SearchSalesforceProxy extends SalesforceProxy {
 
         if (query.getSize() > 0) {
             for (int i = 0; i < query.getSize(); i++) {
-                Market__c market = (Market__c) query.getRecords(i);
+                Market__c market = (Market__c)query.getRecords(i);
                 regionMap.put(market.getMarket__c(), market.getRegion__c());
             }
         }
         else {
             return null;
         }
-        
+
         return regionMap;
+    }
+
+    public String getCountryCode(String imei) throws InvalidSObjectFault, MalformedQueryFault, InvalidFieldFault, InvalidIdFault,
+            UnexpectedErrorFault, InvalidQueryLocatorFault, RemoteException {
+
+        StringBuilder queryText = new StringBuilder();
+        queryText.append("SELECT ");
+        queryText.append("p.Country__r.ISO_Standard_Code__c ");
+        queryText.append("FROM ");
+        queryText.append("Person__c p ");
+        queryText.append("WHERE ");
+        queryText.append("p.Handset__r.IMEI__c = '");
+        queryText.append(imei);
+        queryText.append("'");
+
+        QueryResult query = getBinding().query(queryText.toString());
+
+        if (query.getSize() > 0) {
+            Person__c person = (Person__c)query.getRecords(0);
+            return person.getCountry__r().getISO_Standard_Code__c();
+        }
+        else {
+            return null;
+        }
+
     }
 }

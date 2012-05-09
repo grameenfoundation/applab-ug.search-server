@@ -140,4 +140,14 @@
     <servlet-name>GetFarmerCache</servlet-name>
     <url-pattern>/getFarmerCache</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>GetCountryCode</display-name>
+    <servlet-name>GetCountryCode</servlet-name>
+    <servlet-class>applab.search.server.GetCountryCode</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetCountryCode</servlet-name>
+    <url-pattern>/getCountryCode</url-pattern>
+  </servlet-mapping>
 </web-app>
