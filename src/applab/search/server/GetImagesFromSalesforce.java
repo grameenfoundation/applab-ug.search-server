@@ -23,39 +23,43 @@ public class GetImagesFromSalesforce extends ApplabServlet {
 
     @Override
     protected void doApplabGet(HttpServletRequest request,
-            HttpServletResponse response, ServletRequestContext context)
+                               HttpServletResponse response, ServletRequestContext context)
             throws Exception {
-        String imageId = request.getParameter("imageId");
-        if (imageId == null) {
+        // string is split since it contains both attachment Id and menu Item Id
+        String fullImageId = request.getParameter("imageId");
+        if (fullImageId == null) {
             response.getWriter().write("Image Id is null so cannot get image");
             return;
         }
+        String imageId = fullImageId.split("-")[1];
+        log("Image Id : " + fullImageId);        
         log("List of cached image ids");
         for (Entry<String, byte[]> entry : cachedImages.entrySet()) {
             log(entry.getKey());
         }
-        if (cachedImages.containsKey(imageId)) {
+        if (cachedImages.containsKey(fullImageId)) {
             log("Getting image from cache");
             response.setContentType("image/jpeg");
-            response.setContentLength(cachedImages.get(imageId).length);
-            response.getOutputStream().write(cachedImages.get(imageId));
-        } else {
+            response.setContentLength(cachedImages.get(fullImageId).length);
+            response.getOutputStream().write(cachedImages.get(fullImageId));
+        }
+        else {
             log("Getting image from SF");
 
             // Use soap api to login and get session info
             SforceServiceLocator soapServiceLocator = new SforceServiceLocator();
             soapServiceLocator
-                    .setSoapEndpointAddress((String) ApplabConfiguration
+                    .setSoapEndpointAddress((String)ApplabConfiguration
                             .getConfigParameter(WebAppId.global,
                                     "salesforceAddress", ""));
-            SoapBindingStub binding = (SoapBindingStub) soapServiceLocator
+            SoapBindingStub binding = (SoapBindingStub)soapServiceLocator
                     .getSoap();
             LoginResult loginResult = binding.login(
-                    (String) ApplabConfiguration.getConfigParameter(
+                    (String)ApplabConfiguration.getConfigParameter(
                             WebAppId.global, "salesforceUsername", ""),
-                    (String) ApplabConfiguration.getConfigParameter(
+                    (String)ApplabConfiguration.getConfigParameter(
                             WebAppId.global, "salesforcePassword", "")
-                            + (String) ApplabConfiguration.getConfigParameter(
+                            + (String)ApplabConfiguration.getConfigParameter(
                                     WebAppId.global, "salesforceToken", ""));
             SessionHeader sessionHeader = new SessionHeader(
                     loginResult.getSessionId());
@@ -67,9 +71,9 @@ public class GetImagesFromSalesforce extends ApplabServlet {
                             + imageId + "'");
             if (queryResults.getSize() > 0) {
                 for (int i = 0; i < queryResults.getRecords().length; i++) {
-                    Attachment attachment = (Attachment) queryResults
+                    Attachment attachment = (Attachment)queryResults
                             .getRecords()[i];
-                    cachedImages.put(imageId, attachment.getBody());
+                    cachedImages.put(fullImageId, attachment.getBody());
                     response.setContentType("image/jpeg");
                     response.setContentLength(attachment.getBody().length);
                     response.getOutputStream().write(attachment.getBody());

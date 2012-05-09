@@ -171,10 +171,4 @@ public class GetSearchKeywords extends ApplabServlet {
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/UpdateKeywords", "SessionHeader", sessionHeader);
         return serviceStub;
     }
-    
-   /* private String getSalesforceFormattedDateString(String searchDateString) {
-        
-        String salesforceDate = "";
-        salesforceDate = searchDateString.substring(0, searchDateString.length() - 4) + "";
-    } */
 }
