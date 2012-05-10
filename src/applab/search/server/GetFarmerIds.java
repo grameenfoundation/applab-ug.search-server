@@ -8,9 +8,7 @@ import applab.server.WebAppId;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -30,8 +28,6 @@ import com.sforce.soap.enterprise.SoapBindingStub;
 import com.sforce.soap.enterprise.fault.InvalidIdFault;
 import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
-import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheBindingStub;
-import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheServiceLocator;
 import com.sforce.soap.schemas._class.PreRegisterFarmers.BulkRegisterFarmers;
 import com.sforce.soap.schemas._class.PreRegisterFarmers.PreRegisterFarmersBindingStub;
 import com.sforce.soap.schemas._class.PreRegisterFarmers.PreRegisterFarmersServiceLocator;
@@ -102,12 +98,13 @@ public class GetFarmerIds extends ApplabServlet {
      * @throws ServiceException 
      */
     private String getFarmerIdsFromSalesforce(String imei, int currentFarmerIdCount) throws RemoteException, ServiceException {
-        /*Random rand = new Random();
+        /*
+         * Random rand = new Random();
         long randomValue1 = Math.round(rand.nextDouble() * 10000);
         long randomValue2 = Math.round(rand.nextDouble() * 10000);
         return String.format("{\"FarmerIds\" : [ {\"Id\" : \"223AB%d\", \"FId\" : \"DF%d\"}, {\"Id\" : \"234CD%d\", \"FId\" : \"CQ%d\"}]}",
-                randomValue1, randomValue1, randomValue2, randomValue2); */
-              
+                randomValue1, randomValue1, randomValue2, randomValue2); 
+        */             
                 
         if (currentFarmerIdCount > 10) {
             return "";            
