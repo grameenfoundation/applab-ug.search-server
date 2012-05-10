@@ -121,16 +121,6 @@
     <url-pattern>/getsfimages</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>Gets Available Farmer Ids from Salesforce</description>
-    <display-name>GetFarmerIds</display-name>
-    <servlet-name>GetFarmerIds</servlet-name>
-    <servlet-class>applab.search.server.GetFarmerIds</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>GetFarmerIds</servlet-name>
-    <url-pattern>/getFarmerIds</url-pattern>
-  </servlet-mapping>
-  <servlet>
     <description></description>
     <display-name>GetFarmerCache</display-name>
     <servlet-name>GetFarmerCache</servlet-name>
@@ -149,5 +139,15 @@
   <servlet-mapping>
     <servlet-name>GetCountryCode</servlet-name>
     <url-pattern>/getCountryCode</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description>Gets Farmer Ids from Salesforce </description>
+    <display-name>GetFarmerIds</display-name>
+    <servlet-name>GetFarmerIds</servlet-name>
+    <servlet-class>applab.search.server.GetFarmerIds</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetFarmerIds</servlet-name>
+    <url-pattern>/getFarmerIds</url-pattern>
   </servlet-mapping>
 </web-app>
