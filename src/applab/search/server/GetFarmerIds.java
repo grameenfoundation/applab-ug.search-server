@@ -199,8 +199,7 @@ public class GetFarmerIds extends ApplabServlet {
             }
             
             sbFarmerIdsJson.append(fIdJsonPart);
-        }
-        
+        }        
         return sbFarmerIdsJson.toString();
     }
     
@@ -218,8 +217,7 @@ public class GetFarmerIds extends ApplabServlet {
             else {
                 sbFinalString.append(stringArray.get(i));
             }
-        }
-        
+        }        
         return sbFinalString.toString();
     }
 }
