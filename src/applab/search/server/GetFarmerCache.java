@@ -30,8 +30,6 @@ import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheBindingStub;
 import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheServiceLocator;
-import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsBindingStub;
-import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsServiceLocator;
 
 /**
  * Servlet implementation class GetFarmerIds
