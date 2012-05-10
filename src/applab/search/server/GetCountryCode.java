@@ -50,8 +50,11 @@ public class GetCountryCode extends ApplabServlet {
         // make Salesforce call
         String countryCode = getCountryCodeFromSalesforce(imei);
         
+        //The Client reads the returned string as Json
+        String countryCodeJson = String.format("{\"countryCode\" : \"%s\"}",countryCode);
+        
         PrintWriter out = response.getWriter();
-        out.println(countryCode);
+        out.println(countryCodeJson);
         log("Finished sending country code");        
     }
     
