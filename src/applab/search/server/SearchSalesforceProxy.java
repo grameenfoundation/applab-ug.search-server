@@ -15,6 +15,7 @@ import com.sforce.soap.enterprise.fault.InvalidSObjectFault;
 import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.MalformedQueryFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
+import com.sforce.soap.enterprise.sobject.Attachment;
 import com.sforce.soap.enterprise.sobject.Market__c;
 import com.sforce.soap.enterprise.sobject.Person__c;
 
@@ -73,5 +74,36 @@ public class SearchSalesforceProxy extends SalesforceProxy {
             return null;
         }
 
+    }
+    /**
+     * Get attachment from Saleforce. This can be am image or any other permitted SF attachment
+     * 
+     * @param id
+     * @return
+     * @throws InvalidSObjectFault
+     * @throws MalformedQueryFault
+     * @throws InvalidFieldFault
+     * @throws InvalidIdFault
+     * @throws UnexpectedErrorFault
+     * @throws InvalidQueryLocatorFault
+     * @throws RemoteException
+     */
+    public Attachment getAttachement(String id) throws InvalidSObjectFault, MalformedQueryFault, InvalidFieldFault, InvalidIdFault, UnexpectedErrorFault, InvalidQueryLocatorFault, RemoteException {
+        StringBuilder queryText = new StringBuilder();
+        queryText.append("SELECT ");
+        queryText.append("Id, Body ");
+        queryText.append("FROM ");
+        queryText.append("Attachment ");
+        queryText.append("WHERE ");
+        queryText.append("Id = '");
+        queryText.append(id);
+        queryText.append("'");
+        
+        QueryResult query = getBinding().query(queryText.toString());
+        if (query.getSize() > 0) {
+            Attachment attachment = (Attachment)query.getRecords(0);
+            return attachment;
+        }
+        return null;
     }
 }

@@ -44,7 +44,8 @@ public class GetSearchKeywords extends ApplabServlet {
 
     private static final long serialVersionUID = 1L;
     private final static String IMEI = "x-Imei";
-    private final static String LAST_UPDATE_DATE = "localKeywordsVersion";
+    private final static String KEYWORDS_LAST_UPDATE_DATE = "localKeywordsVersion";
+    private final static String IMAGES_LAST_UPDATE_DATE = "localImagesVersion"; 
     private final static String MENU_IDS = "menuIds";
 
     @Override
@@ -75,9 +76,13 @@ public class GetSearchKeywords extends ApplabServlet {
             log("x-Imei: " + imei);
             
             Document requestXml = context.getRequestBodyAsXml();
-            NodeList nodeList = requestXml.getElementsByTagName(LAST_UPDATE_DATE);
-            String dateString = nodeList.item(0).getTextContent();
-            log("date String: " + dateString);
+            NodeList keywordsNodeList = requestXml.getElementsByTagName(KEYWORDS_LAST_UPDATE_DATE);
+            String keywordsDateString = keywordsNodeList.item(0).getTextContent();
+            log("Keywords update String: " + keywordsDateString);
+            
+            NodeList imagesNodeList = requestXml.getElementsByTagName(IMAGES_LAST_UPDATE_DATE);
+            String imagesDateString = imagesNodeList.item(0).getTextContent();
+            log("Keywords update String: " + keywordsDateString);
             
             NodeList menuList = requestXml.getElementsByTagName(MENU_IDS);
             String[] menuIds = menuList.item(0).getTextContent().split(",");
@@ -93,13 +98,15 @@ public class GetSearchKeywords extends ApplabServlet {
             // build Json request.
             JsonRequest req = new JsonRequest();
             req.setImei(imei);
-            req.setLastUpdatedDate(dateString);
+            req.setKeywordsLastUpdatedDate(keywordsDateString);
+            req.setImagesLastUpdatedDate(imagesDateString);
             req.setMenuIds(menuIds);
 
             String[] jsonResults = serviceStub.getKeywords(req);
 
             // build welformed response for client
-            String json = buildJsonResponse(jsonResults, currentVersion);
+            String json = buildJsonResponse(jsonResults, currentVersion);         
+            
             PrintWriter out = response.getWriter();
             out.println(json);
             log("Finished sending keywords");
@@ -107,14 +114,17 @@ public class GetSearchKeywords extends ApplabServlet {
         catch (DOMException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            log(e.getMessage());
         }
         catch (SAXException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            log(e.getMessage());
         }
         catch (ParserConfigurationException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            log(e.getMessage());
         }
     }
 
