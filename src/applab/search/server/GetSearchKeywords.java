@@ -78,12 +78,18 @@ public class GetSearchKeywords extends ApplabServlet {
             Document requestXml = context.getRequestBodyAsXml();
             NodeList keywordsNodeList = requestXml.getElementsByTagName(KEYWORDS_LAST_UPDATE_DATE);
             String keywordsDateString = keywordsNodeList.item(0).getTextContent();
+            
+            // set the default images last update date to the same value as keywords updated date
+            String imagesDateString = keywordsDateString;
             log("Keywords update String: " + keywordsDateString);
             
             NodeList imagesNodeList = requestXml.getElementsByTagName(IMAGES_LAST_UPDATE_DATE);
-            String imagesDateString = imagesNodeList.item(0).getTextContent();
-            log("Keywords update String: " + keywordsDateString);
-            
+            // Check to ensure that images update date is sent. Pre 4.1.2 Search clients do not send this information
+            if (imagesNodeList != null && imagesNodeList.getLength() != 0) {
+                imagesDateString = imagesNodeList.item(0).getTextContent();
+                log("Keywords update String: " + keywordsDateString);
+            }           
+                        
             NodeList menuList = requestXml.getElementsByTagName(MENU_IDS);
             String[] menuIds = menuList.item(0).getTextContent().split(",");
             
@@ -106,7 +112,7 @@ public class GetSearchKeywords extends ApplabServlet {
 
             // build welformed response for client
             String json = buildJsonResponse(jsonResults, currentVersion);         
-            
+            response.setContentType("application/json; charset = UTF-8");
             PrintWriter out = response.getWriter();
             out.println(json);
             log("Finished sending keywords");
