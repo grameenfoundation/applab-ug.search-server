@@ -3,6 +3,7 @@ package applab.search.server;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -54,8 +55,9 @@ public class KeywordsContentBuilder {
             selectCommand.where("(keyword.updated > '" + localVersion + "' or category.updated > '" + localVersion + "')");
         }
         else {
-            selectCommand.whereNot("keyword.isDeleted");
+           selectCommand.whereNot("keyword.isDeleted");
         }
+        
         //selectCommand.orderBy("version desc"); // We do this so that the most recently updated one is on top (this allows us to get the next version number)
         return selectCommand.execute();
     }
