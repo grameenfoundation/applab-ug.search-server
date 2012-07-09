@@ -39,7 +39,7 @@ public class GetFarmerIds extends ApplabServlet {
     private static final long serialVersionUID = 1L;
     private static final String IMEI = "x-Imei";
     private static final String CURRENT_FARMER_ID_COUNT = "currentFarmerIdCount";
-    public static final int FARMER_ID_SET_SIZE = 100;
+    public static final int FARMER_ID_SET_SIZE = 15;
 
     /**
      * Default constructor. 
