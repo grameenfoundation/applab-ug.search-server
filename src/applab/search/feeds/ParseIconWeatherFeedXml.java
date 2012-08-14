@@ -491,9 +491,9 @@ public class ParseIconWeatherFeedXml {
 
         return null;
     }
-
+    
     /**
-     * Saves all weather conditions keywords to database.
+     * Saves all weather conditions keywords to database and salesforce
      * 
      * @return
      *          - boolean representing whether keywords were saved to database or not.
@@ -501,7 +501,41 @@ public class ParseIconWeatherFeedXml {
      * @throws ClassNotFoundException
      * @throws SQLException
      */
-    public boolean saveToDatabase()
+    public boolean save() throws ClassNotFoundException, SQLException {
+        return saveToDatabase() & saveToSalesforce();
+    }
+
+    /**
+     * 
+     * @return
+     *          - boolean representing whether keywords were saved to salesforce or not.
+     */
+    private boolean saveToSalesforce() {
+        boolean success = true;
+
+        try {
+           
+        }
+        catch (Exception e) {
+            success = false;
+        }
+        finally {
+            
+        }
+
+        return success;
+    }
+
+    /**
+     * Saves all weather conditions keywords to database
+     * 
+     * @return
+     *          - boolean representing whether keywords were saved or not.
+     *          
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     */
+    private boolean saveToDatabase()
             throws ClassNotFoundException, SQLException {
 
         boolean success = true;

@@ -72,7 +72,7 @@ public class UpdateIconWeatherFeed extends ApplabServlet {
 
                         // Loop through the keywords and save them
                         log("Updating " + keywords.size() + " keywords");
-                        if (keywords.size() == 0 || !feed.saveToDatabase()) {
+                        if (keywords.size() == 0 || !feed.save()) {
                             allSaved = false;
                         }
                     }
