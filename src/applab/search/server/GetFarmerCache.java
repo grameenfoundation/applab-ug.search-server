@@ -70,7 +70,6 @@ public class GetFarmerCache extends ApplabServlet {
             // make Salesforce call
             String jsonResult = getFarmerCacheFromSalesforce(imei, dateString);
 
-            log(jsonResult);
             PrintWriter out = response.getWriter();
             out.println(jsonResult);
             log("Finished sending Farmer Cache");
@@ -109,6 +108,7 @@ public class GetFarmerCache extends ApplabServlet {
         str.append(currentVersion);
         str.append("\"}");
         return str.toString();
+
 
     }
 

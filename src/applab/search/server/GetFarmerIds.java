@@ -2,13 +2,22 @@ package applab.search.server;
 
 import applab.server.ApplabConfiguration;
 import applab.server.ApplabServlet;
+import applab.server.DatabaseTable;
+import applab.server.SelectCommand;
 import applab.server.ServletRequestContext;
 import applab.server.WebAppId;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -17,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 
+import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -39,14 +49,12 @@ public class GetFarmerIds extends ApplabServlet {
     private static final long serialVersionUID = 1L;
     private static final String IMEI = "x-Imei";
     private static final String CURRENT_FARMER_ID_COUNT = "currentFarmerIdCount";
-    public static final int FARMER_ID_SET_SIZE = 15;
+    private static final int FARMER_ID_SET_SIZE = 15;
 
-    /**
-     * Default constructor. 
-     */
-    public GetFarmerIds() {
-        // TODO Auto-generated constructor stub
-    }
+    /* Letters from which random farmer ids shall be generated */
+    private static String[] ALPHABET_LETTTERS = { "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "T", "U", "V", "X", "Y",
+            "Z" };
+    String imei = "";
 
     @Override
     protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
@@ -61,7 +69,7 @@ public class GetFarmerIds extends ApplabServlet {
 
         try {
             log("Reached post method for Get Farmer Ids");
-            String imei = request.getHeader(IMEI);
+            imei = request.getHeader(IMEI);
             log("x-Imei: " + imei);
             Document requestXml = context.getRequestBodyAsXml();
             NodeList nodeList = requestXml.getElementsByTagName(CURRENT_FARMER_ID_COUNT);
@@ -77,66 +85,77 @@ public class GetFarmerIds extends ApplabServlet {
             out.println(jsonResult);
             log("Finished sending new Farmer Ids");
         }
-        catch (SAXException e) {
-
-            e.printStackTrace();
-        }
-        catch (ParserConfigurationException e) {
-
-            e.printStackTrace();
+        catch (Exception e) {
+            log("Error: " + e);
         }
     }
-    
-    private String getFarmerIdsFromSalesforce(String imei, int currentFarmerIdCount) throws RemoteException, ServiceException {
+
+    private String getFarmerIdsFromSalesforce(String imei, int currentFarmerIdCount) throws RemoteException, ServiceException,
+            ClassNotFoundException, SQLException {
         log("Reached Method getFarmerIdsFromSalesforce");
-       
-        if (currentFarmerIdCount > 10) {
-            return getEmptyFarmerIdsJson();            
-        }        
-        int newIdCount = FARMER_ID_SET_SIZE - currentFarmerIdCount;       
-        
-        //TODO 1. First generate New Codes
+
+        if (currentFarmerIdCount > FARMER_ID_SET_SIZE / 2) {
+            return getEmptyFarmerIdsJson();
+        }
+        int newIdCount = FARMER_ID_SET_SIZE - currentFarmerIdCount;
+
+        // 1. First generate New Ids and save them
         String generatedFarmerIds = generateNewFarmerIds(newIdCount);
-        
-        //3. Push the IDs to Salesforce as comma seperated
+
+        // 3. Push the IDs to Salesforce as comma seperated
         BulkRegisterFarmers bulkRegisterFarmers = new BulkRegisterFarmers();
         bulkRegisterFarmers.setImei(imei);
         bulkRegisterFarmers.setNewFarmerIds(generatedFarmerIds);
-        
+
         PreRegisterFarmersBindingStub serviceStub = setupSalesforceAuthentication();
         bulkRegisterFarmers = serviceStub.preRegisterFarmers(bulkRegisterFarmers);
-        
-        //TODO 4. Save the newIds accepted by Salesforce to the DB and Generate JSON
+
+        // 4. Save the newIds accepted by Salesforce to the DB and Generate JSON
         String savedFarmerIds = bulkRegisterFarmers.getSavedIds();
-        
+
         String farmerIdsJson = saveNewFarmerIdsAndCreateJson(savedFarmerIds);
-                
+
         return farmerIdsJson;
     }
-    
-    private String getEmptyFarmerIdsJson() {        
+
+    /**
+     * @return empty json string of the form {"FarmerIds" : [] }
+     */
+    private String getEmptyFarmerIdsJson() {
         return String.format("{\"FarmerIds\" : []}");
     }
 
-    private String generateNewFarmerIds(int newIdCount) {
-        ArrayList<String> farmerIds = new ArrayList<String>();
-        Random rand = new Random();
-        
-        for (int i=0; i<newIdCount; i++) {
-            //TODO May be get the Max value in DB and have a sequential Number
-            
-            long randomValue = Math.round(rand.nextDouble() * 10000);
-            
-            //Assumed country is UG for now
-            String farmerId = String.format("UG%05d", randomValue);
-            if (farmerIds.contains(farmerId)) {
+    /**
+     * This generates random Ids, currently this has a limit of about 1.8 million different farmers To increase this,
+     * remove the fixed 'U' prefix
+     * 
+     * @param newIdCount
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     */
+    private String generateNewFarmerIds(int newIdCount) throws ClassNotFoundException, SQLException {
+
+        /* Set to show generated Ids and check whether they exist in the database as alreay generated */
+        HashSet<String> farmerIds = new HashSet<String>();
+        Random rand = new Random(1000);
+
+        while (farmerIds.size() < newIdCount) {
+
+            long randomNumber = Math.round(rand.nextDouble() * 100000 - 1);
+            int randomLetter = rand.nextInt(ALPHABET_LETTTERS.length);
+
+            // Assumed country is Uganda for now ??
+            String farmerId = String.format("U%s%05d", ALPHABET_LETTTERS[randomLetter], randomNumber);
+            log("Check if Id: " + farmerId + " is already in database");
+            if (isAlreadyInDatabase(farmerId)) {
+                log("ID is already in database");
                 continue;
             }
-            
-            //TODO Also Check in DB            
+            log("id added to collection: " + farmerId);
             farmerIds.add(farmerId);
         }
-        
+
         return convertArrayListToCsvString(farmerIds);
     }
 
@@ -159,54 +178,98 @@ public class GetFarmerIds extends ApplabServlet {
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/PreRegisterFarmers ", "SessionHeader", sessionHeader);
         return serviceStub;
     }
-    
-    private String saveNewFarmerIdsAndCreateJson(String savedFarmerIds) {
-        
+
+    private String saveNewFarmerIdsAndCreateJson(String savedFarmerIds) throws ClassNotFoundException, SQLException {
+
+        HashSet<String> savedFarmerIdSet = new HashSet<String>();
         StringBuffer sbFarmerIdsJson = new StringBuffer();
         sbFarmerIdsJson.append("{\"FarmerIds\" : [ ");
-        
-        if(null == savedFarmerIds || savedFarmerIds.isEmpty()) {
-            //TODO Return an empty JSON String
+
+        if (null == savedFarmerIds || savedFarmerIds.isEmpty()) {
+            // TODO Return an empty JSON String
             sbFarmerIdsJson.append("]}");
             return sbFarmerIdsJson.toString();
         }
-        
+
         String[] savedFarmerIdsArray = savedFarmerIds.split(",");
-        for (int i=0; i < savedFarmerIdsArray.length; i++) {
+        for (int i = 0; i < savedFarmerIdsArray.length; i++) {
             String savedFarmerId = savedFarmerIdsArray[i];
-            //TODO Save to the Database
-            
-            
-            //Append to the JSON String
+            savedFarmerIdSet.add(savedFarmerId);
+
+            // Append to the JSON String
             String fIdJsonPart = "";
-            if(i < savedFarmerIdsArray.length - 1) {
-                fIdJsonPart = String.format("{\"fId\":\"%s\"},",savedFarmerId);
+            if (i < savedFarmerIdsArray.length - 1) {
+                fIdJsonPart = String.format("{\"fId\":\"%s\"},", savedFarmerId);
             }
             else {
-                fIdJsonPart = String.format("{\"fId\":\"%s\"}]}",savedFarmerId);
+                fIdJsonPart = String.format("{\"fId\":\"%s\"}]}", savedFarmerId);
             }
-            
+
             sbFarmerIdsJson.append(fIdJsonPart);
-        }        
+        }
+        // save Ids to database
+        saveFarmerIdsToDatabase(savedFarmerIdSet);
+        
         return sbFarmerIdsJson.toString();
     }
-    
-    private String convertArrayListToCsvString(ArrayList<String> stringArray) {
+
+    private String convertArrayListToCsvString(HashSet<String> stringSet) {
         StringBuffer sbFinalString = new StringBuffer();
-        
-        if(null == stringArray || stringArray.isEmpty()) {
+        String[] stringArray = stringSet.toArray(new String[0]);
+        if (null == stringArray || stringArray.length == 0) {
             return sbFinalString.toString();
         }
-        
-        for (int i=0; i < stringArray.size(); i++) {
-            if (i < stringArray.size() - 1) {
-                sbFinalString.append(stringArray.get(i) + ",");
+
+        for (int i = 0; i < stringArray.length; i++) {
+            if (i < stringArray.length - 1) {
+                sbFinalString.append(stringArray[i] + ",");
             }
             else {
-                sbFinalString.append(stringArray.get(i));
+                sbFinalString.append(stringArray[i]);
             }
-        }        
+        }
         return sbFinalString.toString();
+    }
+
+    private boolean isAlreadyInDatabase(String farmerId) throws ClassNotFoundException, SQLException {
+        SelectCommand selectCommand = new SelectCommand(DatabaseTable.FarmerId);
+        selectCommand.addField("farmerids.farmer_id", "farmerId");
+        selectCommand.where("farmerids.farmer_id = '" + farmerId + "'");
+        ResultSet resultSet = selectCommand.execute();
+        log("Built select commmand");
+
+        // returns true if there is a first row which in escence mean there is a matching farmer id, esle returns false
+        return resultSet.first();
+    }
+
+    private void saveFarmerIdsToDatabase(HashSet<String> farmerIds) throws ClassNotFoundException, SQLException {
+        Connection connection = SearchDatabaseHelpers.getWriterConnection();
+        connection.setAutoCommit(false);
+        StringBuilder commandText = new StringBuilder();
+        commandText.append("INSERT INTO farmerids ");
+        commandText.append("(farmer_id, imei");
+        commandText.append(") values (?, ?)");
+        PreparedStatement submissionStatement = connection.prepareStatement(commandText.toString());
+        log("Farmer Ids to add to database " + farmerIds.size());
+        for (String farmerId : farmerIds) {
+            submissionStatement.setString(1, farmerId);
+            submissionStatement.setString(2, imei);
+            submissionStatement.addBatch();
+        }
+        try {
+            log("Prepared statement: " + submissionStatement.toString());
+            submissionStatement.executeBatch();
+        }
+        catch (SQLException e) {
+            log("Error " + e);
+            e.printStackTrace();
+            connection.rollback();
+            connection.setAutoCommit(true);
+            submissionStatement.close();
+        }
+        connection.commit();
+        connection.setAutoCommit(true);
+        submissionStatement.close();
     }
 
 }

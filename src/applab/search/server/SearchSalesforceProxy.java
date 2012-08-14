@@ -16,6 +16,7 @@ import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.MalformedQueryFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.enterprise.sobject.Attachment;
+import com.sforce.soap.enterprise.sobject.Document;
 import com.sforce.soap.enterprise.sobject.Market__c;
 import com.sforce.soap.enterprise.sobject.Person__c;
 
@@ -75,6 +76,32 @@ public class SearchSalesforceProxy extends SalesforceProxy {
         }
 
     }
+
+    /**
+     * Checks if the requesting IMEI is that of a CKW
+     * 
+     * @param imei
+     * @return true OR false depending on whether its a CKWs Handset IMEI
+     */
+    public boolean checkIfIsCkw(String imei) throws Exception {
+        StringBuilder queryText = new StringBuilder();
+        queryText.append("SELECT ");
+        queryText.append("Id");
+        queryText.append("FROM ");
+        queryText.append("Ckw__c ");
+        queryText.append("WHERE ");
+        queryText.append("Person__r.Handset__r.IMEI__c = '");
+        queryText.append(imei);
+        queryText.append("'");
+
+        QueryResult query = getBinding().query(queryText.toString());
+
+        if (query.getSize() > 0) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Get attachment from Saleforce. This can be am image or any other permitted SF attachment
      * 
@@ -88,7 +115,8 @@ public class SearchSalesforceProxy extends SalesforceProxy {
      * @throws InvalidQueryLocatorFault
      * @throws RemoteException
      */
-    public Attachment getAttachement(String id) throws InvalidSObjectFault, MalformedQueryFault, InvalidFieldFault, InvalidIdFault, UnexpectedErrorFault, InvalidQueryLocatorFault, RemoteException {
+    public Attachment getAttachement(String id) throws InvalidSObjectFault, MalformedQueryFault, InvalidFieldFault, InvalidIdFault,
+            UnexpectedErrorFault, InvalidQueryLocatorFault, RemoteException {
         StringBuilder queryText = new StringBuilder();
         queryText.append("SELECT ");
         queryText.append("Id, Body ");
@@ -98,12 +126,39 @@ public class SearchSalesforceProxy extends SalesforceProxy {
         queryText.append("Id = '");
         queryText.append(id);
         queryText.append("'");
-        
+
         QueryResult query = getBinding().query(queryText.toString());
         if (query.getSize() > 0) {
             Attachment attachment = (Attachment)query.getRecords(0);
             return attachment;
         }
         return null;
+    }
+
+    public boolean checkIfImeiIsForPersonInCountryCode(String imei, String countryCode) throws InvalidSObjectFault, MalformedQueryFault,
+            InvalidFieldFault, InvalidIdFault, UnexpectedErrorFault, InvalidQueryLocatorFault, RemoteException {
+        try {
+            StringBuilder queryText = new StringBuilder();
+            queryText.append("SELECT ");
+            queryText.append("Id ");
+            queryText.append("FROM ");
+            queryText.append("Person__c ");
+            queryText.append("WHERE ");
+            queryText.append("Handset__r.IMEI__c = '");
+            queryText.append(imei);
+            queryText.append("' AND ");
+            queryText.append("Country__r.ISO_Standard_Code__c = '");
+            queryText.append(countryCode);
+            queryText.append("'");
+
+            QueryResult query = getBinding().query(queryText.toString());
+            if (query.getSize() > 0) {
+                return true;
+            }
+            return false;
+        }
+        catch (Exception ex) {
+            return false;
+        }
     }
 }
