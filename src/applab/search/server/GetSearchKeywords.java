@@ -40,12 +40,12 @@ import com.sforce.soap.enterprise.SoapBindingStub;
 import com.sforce.soap.enterprise.fault.InvalidIdFault;
 import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
-import com.sforce.soap.schemas._class.UpdateKeywords.JsonRequest;
+/*import com.sforce.soap.schemas._class.UpdateKeywords.JsonRequest;
 import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsBindingStub;
 import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsServiceLocator;
 import com.sforce.soap.schemas._class.UpdateKeywordsFromCache.UpdateKeywordsFromCacheBindingStub;
 import com.sforce.soap.schemas._class.UpdateKeywordsFromCache.UpdateKeywordsFromCacheServiceLocator;
-
+*/
 /**
  * Servlet implementation class GetRestKeywords
  */
@@ -70,11 +70,11 @@ public class GetSearchKeywords extends ApplabServlet {
             throws Exception {
         
         PrintWriter out = response.getWriter();
-        SearchSalesforceProxy proxy = new SearchSalesforceProxy();
+       /* SearchSalesforceProxy proxy = new SearchSalesforceProxy();
         // set up saleforce authentication to access webservice
         UpdateKeywordsBindingStub serviceStub = setupSalesforceAuthentication();
         UpdateKeywordsFromCacheBindingStub serviceStubCache = setupSalesforceAuthenticationForCache();
-        
+        */
         try {
             log("Reached post method");
             // get current date & time to stipulate version
@@ -115,7 +115,7 @@ public class GetSearchKeywords extends ApplabServlet {
                 menuIds = new String[0];
                 log("No previous menu Ids");
             }
-                        
+                     /*   
             if ((convertDateStringToDouble(currentVersion) - convertDateStringToDouble(keywordsDateString) > 200 || menuIds.length == 0)
                     && proxy.checkIfImeiIsForPersonInCountryCode(imei, "UG")) {
                 log("getting data from SF cache");
@@ -133,11 +133,14 @@ public class GetSearchKeywords extends ApplabServlet {
                  */
                 
                 // set up saleforce authentication to access webservice
+                /*
                 out.println(serviceStubCache.getCachedKeywords(""));
                 log("Finished sending keywords");
+               
             }
             else {
                 // build Json request.
+            	/*
                 JsonRequest req = new JsonRequest();
                 req.setImei(imei);
                 req.setKeywordsLastUpdatedDate(keywordsDateString);
@@ -150,7 +153,7 @@ public class GetSearchKeywords extends ApplabServlet {
                 String json = buildJsonResponse(jsonResults, currentVersion);
                 out.println(json);
                 log("Finished sending keywords");
-            }
+            }*/
         }
         catch (DOMException e) {
             // TODO Auto-generated catch block
@@ -168,8 +171,9 @@ public class GetSearchKeywords extends ApplabServlet {
             log(e.getMessage());
         }
         catch (Exception e) {
+        	
             // set up saleforce authentication to access webservice
-            out.println(serviceStubCache.getCachedKeywords(""));
+//            out.println(serviceStubCache.getCachedKeywords(""));
             log("Finished sending keywords");
         }
     }
@@ -224,6 +228,7 @@ public class GetSearchKeywords extends ApplabServlet {
      * @throws UnexpectedErrorFault
      * @throws LoginFault
      */
+    /*
     private UpdateKeywordsBindingStub setupSalesforceAuthentication() throws ServiceException, RemoteException, InvalidIdFault,
             UnexpectedErrorFault, LoginFault {
 
@@ -263,4 +268,5 @@ public class GetSearchKeywords extends ApplabServlet {
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/UpdateKeywordsFromCache", "SessionHeader", sessionHeader);
         return serviceStub;
     }
+    */
 }

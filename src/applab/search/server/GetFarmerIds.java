@@ -50,7 +50,7 @@ public class GetFarmerIds extends ApplabServlet {
     private static final String IMEI = "x-Imei";
     private static final String CURRENT_FARMER_ID_COUNT = "currentFarmerIdCount";
     private static final int FARMER_ID_SET_SIZE = 15;
-
+    private static Connection connection;
     /* Letters from which random farmer ids shall be generated */
     private static String[] ALPHABET_LETTTERS = { "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "T", "U", "V", "X", "Y",
             "Z" };
@@ -65,8 +65,9 @@ public class GetFarmerIds extends ApplabServlet {
 
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-            throws ServletException, IOException, ServiceException {
+            throws ServletException, IOException, ServiceException, ClassNotFoundException, SQLException {
 
+        connection = SearchDatabaseHelpers.getWriterConnection();
         try {
             log("Reached post method for Get Farmer Ids");
             imei = request.getHeader(IMEI);
@@ -87,6 +88,9 @@ public class GetFarmerIds extends ApplabServlet {
         }
         catch (Exception e) {
             log("Error: " + e);
+        }
+        finally {
+        	connection.close();
         }
     }
 
@@ -116,6 +120,7 @@ public class GetFarmerIds extends ApplabServlet {
         String farmerIdsJson = saveNewFarmerIdsAndCreateJson(savedFarmerIds);
 
         return farmerIdsJson;
+        return null;
     }
 
     /**
@@ -158,7 +163,7 @@ public class GetFarmerIds extends ApplabServlet {
 
         return convertArrayListToCsvString(farmerIds);
     }
-
+/*
     private PreRegisterFarmersBindingStub setupSalesforceAuthentication() throws ServiceException, RemoteException, InvalidIdFault,
             UnexpectedErrorFault, LoginFault {
 
@@ -177,7 +182,7 @@ public class GetFarmerIds extends ApplabServlet {
         // Share the session info with our webservice
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/PreRegisterFarmers ", "SessionHeader", sessionHeader);
         return serviceStub;
-    }
+    }*/
 
     private String saveNewFarmerIdsAndCreateJson(String savedFarmerIds) throws ClassNotFoundException, SQLException {
 
@@ -232,18 +237,20 @@ public class GetFarmerIds extends ApplabServlet {
     }
 
     private boolean isAlreadyInDatabase(String farmerId) throws ClassNotFoundException, SQLException {
-        SelectCommand selectCommand = new SelectCommand(DatabaseTable.FarmerId);
+       /* SelectCommand selectCommand = new SelectCommand(DatabaseTable.FarmerId);
         selectCommand.addField("farmerids.farmer_id", "farmerId");
         selectCommand.where("farmerids.farmer_id = '" + farmerId + "'");
         ResultSet resultSet = selectCommand.execute();
+        boolean result = resultSet.first();
+        selectCommand.dispose();
         log("Built select commmand");
 
         // returns true if there is a first row which in escence mean there is a matching farmer id, esle returns false
-        return resultSet.first();
+        return result; */
+    	return false;
     }
 
     private void saveFarmerIdsToDatabase(HashSet<String> farmerIds) throws ClassNotFoundException, SQLException {
-        Connection connection = SearchDatabaseHelpers.getWriterConnection();
         connection.setAutoCommit(false);
         StringBuilder commandText = new StringBuilder();
         commandText.append("INSERT INTO farmerids ");
