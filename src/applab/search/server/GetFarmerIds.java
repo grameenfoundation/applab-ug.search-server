@@ -120,7 +120,6 @@ public class GetFarmerIds extends ApplabServlet {
         String farmerIdsJson = saveNewFarmerIdsAndCreateJson(savedFarmerIds);
 
         return farmerIdsJson;
-        return null;
     }
 
     /**
@@ -163,7 +162,7 @@ public class GetFarmerIds extends ApplabServlet {
 
         return convertArrayListToCsvString(farmerIds);
     }
-/*
+
     private PreRegisterFarmersBindingStub setupSalesforceAuthentication() throws ServiceException, RemoteException, InvalidIdFault,
             UnexpectedErrorFault, LoginFault {
 
@@ -182,7 +181,7 @@ public class GetFarmerIds extends ApplabServlet {
         // Share the session info with our webservice
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/PreRegisterFarmers ", "SessionHeader", sessionHeader);
         return serviceStub;
-    }*/
+    }
 
     private String saveNewFarmerIdsAndCreateJson(String savedFarmerIds) throws ClassNotFoundException, SQLException {
 
@@ -237,7 +236,7 @@ public class GetFarmerIds extends ApplabServlet {
     }
 
     private boolean isAlreadyInDatabase(String farmerId) throws ClassNotFoundException, SQLException {
-       /* SelectCommand selectCommand = new SelectCommand(DatabaseTable.FarmerId);
+       SelectCommand selectCommand = new SelectCommand(DatabaseTable.FarmerId);
         selectCommand.addField("farmerids.farmer_id", "farmerId");
         selectCommand.where("farmerids.farmer_id = '" + farmerId + "'");
         ResultSet resultSet = selectCommand.execute();
@@ -246,8 +245,7 @@ public class GetFarmerIds extends ApplabServlet {
         log("Built select commmand");
 
         // returns true if there is a first row which in escence mean there is a matching farmer id, esle returns false
-        return result; */
-    	return false;
+        return result;
     }
 
     private void saveFarmerIdsToDatabase(HashSet<String> farmerIds) throws ClassNotFoundException, SQLException {

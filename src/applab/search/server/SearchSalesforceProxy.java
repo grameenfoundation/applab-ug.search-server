@@ -67,13 +67,13 @@ public class SearchSalesforceProxy extends SalesforceProxy {
 
         QueryResult query = getBinding().query(queryText.toString());
 
-      /*  if (query.getSize() > 0) {
+        if (query.getSize() > 0) {
             Person__c person = (Person__c)query.getRecords(0);
             return person.getCountry__r().getISO_Standard_Code__c();
         }
-        else {*/
+        else {
             return null;
-        //}
+        }
 
     }
 

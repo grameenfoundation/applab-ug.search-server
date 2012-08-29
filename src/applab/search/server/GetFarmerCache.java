@@ -28,9 +28,9 @@ import com.sforce.soap.enterprise.SoapBindingStub;
 import com.sforce.soap.enterprise.fault.InvalidIdFault;
 import com.sforce.soap.enterprise.fault.LoginFault;
 import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
-/*import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheBindingStub;
+import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheBindingStub;
 import com.sforce.soap.schemas._class.FarmerCache.FarmerCacheServiceLocator;
-*/
+
 /**
  * Servlet implementation class GetFarmerIds
  */
@@ -98,7 +98,7 @@ public class GetFarmerCache extends ApplabServlet {
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
         String currentVersion = dateFormat.format(date);
-/*
+
         FarmerCacheBindingStub serviceStub = setupSalesforceAuthentication();
         String result = serviceStub.getFarmerCache(imei, lastUpdateDate);
         
@@ -109,9 +109,8 @@ public class GetFarmerCache extends ApplabServlet {
         str.append("\"}");
         return str.toString();
 
-*/
-        return null;
-    }/*
+
+    }
 
     private FarmerCacheBindingStub setupSalesforceAuthentication() throws ServiceException, RemoteException, InvalidIdFault,
             UnexpectedErrorFault, LoginFault {
@@ -132,5 +131,4 @@ public class GetFarmerCache extends ApplabServlet {
         serviceStub.setHeader("http://soap.sforce.com/schemas/class/FarmerCache", "SessionHeader", sessionHeader);
         return serviceStub;
     }
-*/
 }
