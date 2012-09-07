@@ -68,7 +68,7 @@ public class GetSearchKeywords extends ApplabServlet {
     @Override
     protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
             throws Exception {
-        
+    	response.setContentType("application/json; charset=UTF-8");
         PrintWriter out = response.getWriter();
         SearchSalesforceProxy proxy = new SearchSalesforceProxy();
         // set up saleforce authentication to access webservice
@@ -80,7 +80,7 @@ public class GetSearchKeywords extends ApplabServlet {
             // get current date & time to stipulate version
             // this is done before processing to prevent timelags due to latency and processing
 
-            response.setContentType("application/json; charset = UTF-8");
+            
 
             SimpleDateFormat dateFormat =
                     new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
