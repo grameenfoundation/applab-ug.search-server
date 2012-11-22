@@ -136,7 +136,8 @@ public class Search extends ApplabServlet {
         SessionHeader sessionHeader = new SessionHeader(loginResult.getSessionId());
 
         // Share the session info with our webservice
-        serviceStub.setHeader("http://soap.sforce.com/schemas/class/CreateSearchLogEntry", "SessionHeader", sessionHeader);
+         serviceStub.setHeader("http://soap.sforce.com/schemas/class/CreateSearchLogEntry", "SessionHeader", sessionHeader);
+        
 
         SearchLogEntry searchLogEntry = new SearchLogEntry();
         searchLogEntry.setHandsetId(handsetId);

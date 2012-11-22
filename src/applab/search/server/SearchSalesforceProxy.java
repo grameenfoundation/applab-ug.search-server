@@ -86,7 +86,7 @@ public class SearchSalesforceProxy extends SalesforceProxy {
     public boolean checkIfIsCkw(String imei) throws Exception {
         StringBuilder queryText = new StringBuilder();
         queryText.append("SELECT ");
-        queryText.append("Id");
+        queryText.append("Id ");
         queryText.append("FROM ");
         queryText.append("Ckw__c ");
         queryText.append("WHERE ");

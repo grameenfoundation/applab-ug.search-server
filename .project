@@ -3,7 +3,7 @@
 	<name>Search Server</name>
 	<comment>Server side tomcat code for Search application</comment>
 	<projects>
-		<project>Common Server</project>
+		<project>applab-ug.common-server</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -38,7 +38,7 @@
 		<link>
 			<name>WebContent/WEB-INF/application.xml</name>
 			<type>1</type>
-			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/CommonServer/src/application.xml</locationURI>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/applab-ug.common-server/src/application.xml</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

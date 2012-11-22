@@ -3,7 +3,7 @@
     <wb-module deploy-name="New Dynamic Web Project">
         <wb-resource deploy-path="/" source-path="/WebContent"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <dependent-module archiveName="Common Server.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/Common Server/Common Server">
+        <dependent-module archiveName="Common Server.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/applab-ug.common-server/applab-ug.common-server">
             <dependency-type>uses</dependency-type>
         </dependent-module>
         <property name="java-output-path" value="/New Dynamic Web Project/build/classes"/>
