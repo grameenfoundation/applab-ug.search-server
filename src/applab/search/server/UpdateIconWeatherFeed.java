@@ -1,20 +1,17 @@
-/**
- *
- * Copyright (c) 2011 AppLab, Grameen Foundation
- *
- **/
-
 package applab.search.server;
 
+import applab.search.feeds.ParseIconWeatherFeedXml;
+import applab.server.ApplabServlet;
+import applab.server.ServletRequestContext;
+import applab.server.XmlHelpers;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,84 +20,63 @@ import javax.xml.rpc.ServiceException;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import applab.search.feeds.ParseIconWeatherFeedXml;
-import applab.search.feeds.WeatherConditionsKeyword;
-import applab.server.ApplabServlet;
-import applab.server.ServletRequestContext;
-import applab.server.XmlHelpers;
 
-/**
- * Servlet implementation class UpdateIconWeatherFeed.
- * 
- */
-public class UpdateIconWeatherFeed extends ApplabServlet {
-    private static final long serialVersionUID = 1L;
-    private static final ExecutorService exec = Executors.newSingleThreadExecutor();
+public class UpdateIconWeatherFeed extends ApplabServlet
+{
+  private static final long serialVersionUID = 1L;
+  private static final ExecutorService exec = Executors.newSingleThreadExecutor();
 
-    /***
-     * Update weather for a weather update request body of the form <?xml version="1.0"?> <locations> <location>
-     * <location_id>100229362</location_id> <subcounty_name>Benet</subcounty_name> <region_name>Eastern
-     * Uganda</region_name> <district_name>Kapchorwa</district_name> </location> <location>
-     * <location_id>100229362</location_id> <subcounty_name>Benet</subcounty_name> <region_name>Eastern
-     * Uganda</region_name> <district_name>Kapchorwa</district_name> </location> . . . </locations>
-     */
-    @Override
-    protected void doApplabPost(HttpServletRequest request,
-                                HttpServletResponse response, ServletRequestContext context)
-            throws ServletException, IOException, SAXException, ParserConfigurationException, ParseException, ClassNotFoundException,
-            SQLException, ServiceException, TransformerException {
+  protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
+    throws ServletException, IOException, SAXException, ParserConfigurationException, ParseException, ClassNotFoundException, SQLException, ServiceException, TransformerException
+  {
+    Integer categoryId = Integer.valueOf(getServletConfig().getInitParameter("categoryId"));
 
-        final Integer categoryId = Integer.valueOf(getServletConfig().getInitParameter("categoryId"));
+    String iconFeedUrl = getServletConfig().getInitParameter("IconFeedUrl");
+    String iconWeatherFeedUrl = iconFeedUrl + "3?locationid=";
+    String iconWeatherForecastFeedUrl = iconFeedUrl + "2?locationid=";
 
-        String iconFeedUrl = getServletConfig().getInitParameter("IconFeedUrl");
-        final String iconWeatherFeedUrl = iconFeedUrl + "3?locationid=";
-        final String iconWeatherForecastFeedUrl = iconFeedUrl + "2?locationid=";
+    log("Updating Icon Weather Feed on URL " + iconFeedUrl + " with categoryId = " + categoryId);
 
-        log("Updating Icon Weather Feed on URL " + iconFeedUrl + " with categoryId = " + categoryId);
+    Document requestXml = XmlHelpers.parseXml(request.getReader());
 
-        final Document requestXml = XmlHelpers.parseXml(request.getReader());
+    Runnable task = new Runnable(categoryId, iconWeatherFeedUrl, iconWeatherForecastFeedUrl, requestXml) {
+      public void run() {
+        ParseIconWeatherFeedXml feed = new ParseIconWeatherFeedXml(this.val$categoryId, this.val$iconWeatherFeedUrl, this.val$iconWeatherForecastFeedUrl);
 
-        // Handover processing to another thread to allow servlet to return to client
-        Runnable task = new Runnable() {
-            public void run() {
-                ParseIconWeatherFeedXml feed = new ParseIconWeatherFeedXml(categoryId, iconWeatherFeedUrl, iconWeatherForecastFeedUrl);
-
-                boolean allSaved = true;
-                try {
-                    if (feed.parseWeatherRequest(requestXml)) {
-                        ArrayList<WeatherConditionsKeyword> keywords = feed.parseIconWeather();
-
-                        // Loop through the keywords and save them
-                        log("Updating " + keywords.size() + " keywords");
-                        if (keywords.size() == 0 || !feed.saveToDatabase()) {
-                            allSaved = false;
-                        }
-                    }
-                    else {
-                        allSaved = false;
-                    }
-                }
-                catch (Exception e) {
-                    log(e.getMessage());
-                    allSaved = false;
-                }
-
-                if (allSaved) {
-                    log("All keywords updated successfully");
-                }
-                else {
-                    log("Some keywords have failed to update. May want check out the issue");
-                }
-            }
-        };
-
+        boolean allSaved = true;
         try {
-            exec.execute(task);
+          if (feed.parseWeatherRequest(this.val$requestXml)) {
+            ArrayList keywords = feed.parseIconWeather();
+
+            UpdateIconWeatherFeed.this.log("Updating " + keywords.size() + " keywords");
+            if ((keywords.size() == 0) || (!feed.saveToDatabase()))
+              allSaved = false;
+          }
+          else
+          {
+            allSaved = false;
+          }
         }
-        catch (RejectedExecutionException e) {
-            log("Keyword Processing Task rejected", e);
+        catch (Exception e) {
+          UpdateIconWeatherFeed.this.log(e.getMessage());
+          allSaved = false;
         }
 
-        response.setStatus(HttpServletResponse.SC_ACCEPTED);
+        if (allSaved) {
+          UpdateIconWeatherFeed.this.log("All keywords updated successfully");
+        }
+        else
+          UpdateIconWeatherFeed.this.log("Some keywords have failed to update. May want check out the issue");
+      }
+    };
+    try
+    {
+      exec.execute(task);
     }
+    catch (RejectedExecutionException e) {
+      log("Keyword Processing Task rejected", e);
+    }
+
+    response.setStatus(202);
+  }
 }

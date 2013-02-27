@@ -1,113 +1,123 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5">
-	<servlet>
-		<description>Gets the latest set of keywords</description>
-		<servlet-name>GetKeywords</servlet-name>
-		<servlet-class>applab.search.server.GetKeywords</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>GetKeywords</servlet-name>
-		<url-pattern>/getKeywords</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<description>Search for content</description>
-		<servlet-name>Search</servlet-name>
-		<servlet-class>applab.search.server.Search</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Search</servlet-name>
-		<url-pattern>/search</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<description>Get Images</description>
-		<servlet-name>GetImages</servlet-name>
-		<servlet-class>applab.search.server.GetImages</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>GetImages</servlet-name>
-		<url-pattern>/getImages</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<description>Allow a person to subscribe to an AgInfo Channel</description>
-		<servlet-name>SubscribeAgInfo</servlet-name>
-		<servlet-class>applab.search.server.SubscribeAgInfo</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>SubscribeAgInfo</servlet-name>
-		<url-pattern>/subscribeAgInfo</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<description>Allow a person to unsubscribe to an AgInfo Channel</description>
-		<servlet-name>UnsubscribeAgInfo</servlet-name>
-		<servlet-class>applab.search.server.UnsubscribeAgInfo</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>UnsubscribeAgInfo</servlet-name>
-		<url-pattern>/unsubscribeAgInfo</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<description></description>
-		<display-name>UpdateFitFeed</display-name>
-		<servlet-name>UpdateFitFeed</servlet-name>
-		<servlet-class>applab.search.server.UpdateFitFeed</servlet-class>
-		<init-param>
-			<description>The id in the database for this market_information category.</description>
-			<param-name>categoryId</param-name>
-			 
-			<!-- Test setting<param-value>63</param-value>-->
-			<param-value>64</param-value>
-		</init-param>
-		<init-param>
-			<description>The url for the Fit feed</description>
-			<param-name>FitFeedUrl</param-name>
-			<param-value>http://infotradeuganda.com/feed</param-value>
-		</init-param>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>UpdateFitFeed</servlet-name>
-		<url-pattern>/updateFitFeed</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<description></description>
-		<display-name>UpdateIconLocationsFeed</display-name>
-		<servlet-name>UpdateIconLocationsFeed</servlet-name>
-		<servlet-class>applab.search.server.UpdateIconLocationsFeed</servlet-class>
-		<init-param>
-			<description>The url for the ICON Weather Feed</description>
-			<param-name>IconFeedUrl</param-name>
-			<param-value>http://pmo.applab.org:8899/weather/</param-value>
-		</init-param>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>UpdateIconLocationsFeed</servlet-name>
-		<url-pattern>/updateIconLocationsFeed</url-pattern>
-	</servlet-mapping>
+    xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
+    <servlet>
+        <description>Gets the latest set of keywords</description>
+        <servlet-name>GetKeywords</servlet-name>
+        <servlet-class>applab.search.server.GetKeywords</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetKeywords</servlet-name>
+        <url-pattern>/getKeywords</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description>Search for content</description>
+        <servlet-name>Search</servlet-name>
+        <servlet-class>applab.search.server.Search</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Search</servlet-name>
+        <url-pattern>/search</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description>Get Images</description>
+        <servlet-name>GetImages</servlet-name>
+        <servlet-class>applab.search.server.GetImages</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetImages</servlet-name>
+        <url-pattern>/getImages</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description>Allow a person to subscribe to an AgInfo Channel</description>
+        <servlet-name>SubscribeAgInfo</servlet-name>
+        <servlet-class>applab.search.server.SubscribeAgInfo</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SubscribeAgInfo</servlet-name>
+        <url-pattern>/subscribeAgInfo</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description>Allow a person to unsubscribe to an AgInfo Channel</description>
+        <servlet-name>UnsubscribeAgInfo</servlet-name>
+        <servlet-class>applab.search.server.UnsubscribeAgInfo</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UnsubscribeAgInfo</servlet-name>
+        <url-pattern>/unsubscribeAgInfo</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description></description>
+        <display-name>UpdateFitFeed</display-name>
+        <servlet-name>UpdateFitFeed</servlet-name>
+        <servlet-class>applab.search.server.UpdateFitFeed</servlet-class>
+        <init-param>
+            <description>The id in the database for this market_information category.</description>
+            <param-name>categoryId</param-name>
+             
+            <!-- Test setting<param-value>63</param-value>-->
+            <param-value>64</param-value>
+        </init-param>
+        <init-param>
+            <description>The url for the Fit feed</description>
+            <param-name>FitFeedUrl</param-name>
+            <param-value>http://mis.infotradeuganda.com/feed</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateFitFeed</servlet-name>
+        <url-pattern>/updateFitFeed</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description></description>
+        <display-name>UpdateIconLocationsFeed</display-name>
+        <servlet-name>UpdateIconLocationsFeed</servlet-name>
+        <servlet-class>applab.search.server.UpdateIconLocationsFeed</servlet-class>
+        <init-param>
+            <description>The url for the ICON Weather Feed</description>
+            <param-name>IconFeedUrl</param-name>
+            <param-value>http://pmo.applab.org:8899/weather/</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateIconLocationsFeed</servlet-name>
+        <url-pattern>/updateIconLocationsFeed</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<description></description>
-		<display-name>UpdateIconWeatherFeed</display-name>
-		<servlet-name>UpdateIconWeatherFeed</servlet-name>
-		<servlet-class>applab.search.server.UpdateIconWeatherFeed</servlet-class>
-		<init-param>
-			<description>The id in the database for this Regional_Weather_Info category.</description>
-			<param-name>categoryId</param-name>
-			<!--<param-value>19</param-value> Test Server-->
-			<param-value>71</param-value>
-		</init-param>
-		<init-param>
-			<description>The url for the ICON Weather Feed</description>
-			<param-name>IconFeedUrl</param-name>
-			<param-value>http://pmo.applab.org:8899/weather/</param-value>
-		</init-param>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>UpdateIconWeatherFeed</servlet-name>
-		<url-pattern>/updateIconWeatherFeed</url-pattern>
-	</servlet-mapping>
-	<servlet>
+    <servlet>
+        <description></description>
+        <display-name>UpdateIconWeatherFeed</display-name>
+        <servlet-name>UpdateIconWeatherFeed</servlet-name>
+        <servlet-class>applab.search.server.UpdateIconWeatherFeed</servlet-class>
+        <init-param>
+            <description>The id in the database for this Regional_Weather_Info category.</description>
+            <param-name>categoryId</param-name>
+            <!--<param-value>19</param-value> Test Server-->
+            <param-value>71</param-value>
+        </init-param>
+        <init-param>
+            <description>The url for the ICON Weather Feed</description>
+            <param-name>IconFeedUrl</param-name>
+            <param-value>http://pmo.applab.org:8899/weather/</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateIconWeatherFeed</servlet-name>
+        <url-pattern>/updateIconWeatherFeed</url-pattern>
+    </servlet-mapping>
+ <servlet>
+    <description></description>
+    <display-name>GetSearchKeywords</display-name>
+    <servlet-name>GetSearchKeywords</servlet-name>
+    <servlet-class>applab.search.server.GetSearchKeywords</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetSearchKeywords</servlet-name>
+    <url-pattern>/getsearchkeywords</url-pattern>
+  </servlet-mapping>
+  <servlet>
     <description>Servlet to get images from Salesforce</description>
     <display-name>GetImagesFromSalesforce</display-name>
     <servlet-name>GetImagesFromSalesforce</servlet-name>
@@ -116,5 +126,35 @@
   <servlet-mapping>
     <servlet-name>GetImagesFromSalesforce</servlet-name>
     <url-pattern>/getsfimages</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <description>Gets Available Farmer Ids from Salesforce</description>
+    <display-name>GetFarmerIds</display-name>
+    <servlet-name>GetFarmerIds</servlet-name>
+    <servlet-class>applab.search.server.GetFarmerIds</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetFarmerIds</servlet-name>
+    <url-pattern>/getFarmerIds</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>GetFarmerCache</display-name>
+    <servlet-name>GetFarmerCache</servlet-name>
+    <servlet-class>applab.search.server.GetFarmerCache</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetFarmerCache</servlet-name>
+    <url-pattern>/getFarmerCache</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <description></description>
+    <display-name>GetCountryCode</display-name>
+    <servlet-name>GetCountryCode</servlet-name>
+    <servlet-class>applab.search.server.GetCountryCode</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetCountryCode</servlet-name>
+    <url-pattern>/getCountryCode</url-pattern>
   </servlet-mapping>
 </web-app>
