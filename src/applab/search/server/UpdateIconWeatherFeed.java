@@ -10,7 +10,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -57,7 +56,8 @@ public class UpdateIconWeatherFeed extends ApplabServlet
             allSaved = false;
           }
         }
-        catch (Exception e) {
+        catch (Exception e)
+        {
           UpdateIconWeatherFeed.this.log(e.getMessage());
           allSaved = false;
         }
@@ -69,13 +69,7 @@ public class UpdateIconWeatherFeed extends ApplabServlet
           UpdateIconWeatherFeed.this.log("Some keywords have failed to update. May want check out the issue");
       }
     };
-    try
-    {
-      exec.execute(task);
-    }
-    catch (RejectedExecutionException e) {
-      log("Keyword Processing Task rejected", e);
-    }
+    exec.execute(task);
 
     response.setStatus(202);
   }

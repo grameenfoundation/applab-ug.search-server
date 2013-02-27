@@ -56,6 +56,7 @@ public class GetFarmerCache extends ApplabServlet
 
       String jsonResult = getFarmerCacheFromSalesforce(imei, dateString);
 
+      log(jsonResult);
       PrintWriter out = response.getWriter();
       out.println(jsonResult);
       log("Finished sending Farmer Cache");

@@ -39,7 +39,6 @@ public class GetFarmerIds extends ApplabServlet
   private static final String IMEI = "x-Imei";
   private static final String CURRENT_FARMER_ID_COUNT = "currentFarmerIdCount";
   private static final int FARMER_ID_SET_SIZE = 15;
-  private static Connection connection;
   private static String[] ALPHABET_LETTTERS = { "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "T", "U", "V", "X", "Y", 
     "Z" };
 
@@ -53,10 +52,10 @@ public class GetFarmerIds extends ApplabServlet
   }
 
   protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws ServletException, IOException, ServiceException, ClassNotFoundException, SQLException
+    throws ServletException, IOException, ServiceException
   {
-    connection = SearchDatabaseHelpers.getWriterConnection();
-    try {
+    try
+    {
       log("Reached post method for Get Farmer Ids");
       this.imei = request.getHeader("x-Imei");
       log("x-Imei: " + this.imei);
@@ -75,9 +74,6 @@ public class GetFarmerIds extends ApplabServlet
     }
     catch (Exception e) {
       log("Error: " + e);
-    }
-    finally {
-      connection.close();
     }
   }
 
@@ -115,15 +111,14 @@ public class GetFarmerIds extends ApplabServlet
     throws ClassNotFoundException, SQLException
   {
     HashSet farmerIds = new HashSet();
-
-    Random rand = new Random();
+    Random rand = new Random(1000L);
 
     while (farmerIds.size() < newIdCount)
     {
-      long randomNumber = Math.round(rand.nextDouble() * 10000.0D - 1.0D);
+      long randomNumber = Math.round(rand.nextDouble() * 100000.0D - 1.0D);
       int randomLetter = rand.nextInt(ALPHABET_LETTTERS.length);
 
-      String farmerId = String.format("U%s%04d", new Object[] { ALPHABET_LETTTERS[randomLetter], Long.valueOf(randomNumber) });
+      String farmerId = String.format("U%s%05d", new Object[] { ALPHABET_LETTTERS[randomLetter], Long.valueOf(randomNumber) });
       log("Check if Id: " + farmerId + " is already in database");
       if (isAlreadyInDatabase(farmerId)) {
         log("ID is already in database");
@@ -169,7 +164,6 @@ public class GetFarmerIds extends ApplabServlet
     String[] savedFarmerIdsArray = savedFarmerIds.split(",");
     for (int i = 0; i < savedFarmerIdsArray.length; i++) {
       String savedFarmerId = savedFarmerIdsArray[i];
-      savedFarmerIdSet.add(savedFarmerId);
 
       String fIdJsonPart = "";
       if (i < savedFarmerIdsArray.length - 1) {
@@ -210,14 +204,13 @@ public class GetFarmerIds extends ApplabServlet
     selectCommand.addField("farmerids.farmer_id", "farmerId");
     selectCommand.where("farmerids.farmer_id = '" + farmerId + "'");
     ResultSet resultSet = selectCommand.execute();
-    boolean result = resultSet.first();
-    selectCommand.dispose();
     log("Built select commmand");
 
-    return result;
+    return resultSet.first();
   }
 
   private void saveFarmerIdsToDatabase(HashSet<String> farmerIds) throws ClassNotFoundException, SQLException {
+    Connection connection = SearchDatabaseHelpers.getWriterConnection();
     connection.setAutoCommit(false);
     StringBuilder commandText = new StringBuilder();
     commandText.append("INSERT INTO farmerids ");

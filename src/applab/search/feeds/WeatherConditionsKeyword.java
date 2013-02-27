@@ -218,7 +218,7 @@ public class WeatherConditionsKeyword
 
   public String generateKeyword()
   {
-    if ((this.region == null) || (this.region == "") || (this.district == null) || (this.district == "") || (this.subcounty == null) || (this.subcounty == "")) {
+    if ((this.region == null) || (this.district == null) || (this.subcounty == null)) {
       return null;
     }
     StringBuilder keyword = new StringBuilder();
@@ -294,17 +294,10 @@ public class WeatherConditionsKeyword
     return keywordContent.toString();
   }
 
-    /**
-     * Generates Forecast conditions
-     * 
-     * @return - String containing the weather forecast content
-     * 
-     * @throws ParseException
-     */
-    public String getForecastConditions()
-            throws ParseException {
-
-        StringBuilder forecastContent = new StringBuilder();
+  public String getForecastConditions()
+    throws ParseException
+  {
+    StringBuilder forecastContent = new StringBuilder();
 
     Calendar currentConditionsDate = Calendar.getInstance();
     currentConditionsDate.setTime(DatabaseHelpers.getJavaDateFromString(getReadingTime(), 4));

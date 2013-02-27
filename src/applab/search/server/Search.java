@@ -16,6 +16,7 @@ import com.sforce.soap.schemas._class.CreateSearchLogEntry.CreateSearchLogEntryB
 import com.sforce.soap.schemas._class.CreateSearchLogEntry.CreateSearchLogEntryServiceLocator;
 import com.sforce.soap.schemas._class.CreateSearchLogEntry.SearchLogEntry;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URLDecoder;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
@@ -143,6 +144,7 @@ public class Search extends ApplabServlet
     searchLogEntry.setSubmissionLatitude(submissionData.latitude.toString());
     searchLogEntry.setSubmissionLongitude(submissionData.longitude.toString());
     searchLogEntry.setSubmissionGPSTime(String.valueOf(submissionData.timestamp));
+    System.out.println("Category: " + category);
 
     searchLogEntry.setQuery(keyword);
 

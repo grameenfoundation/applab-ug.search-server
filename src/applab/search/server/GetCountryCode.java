@@ -29,7 +29,7 @@ public class GetCountryCode extends ApplabServlet
     String imei = request.getHeader("x-Imei");
     log("x-Imei: " + imei);
 
-    String countryCode = getCountryCodeFromSalesforce(imei);
+    String countryCode = getCountryCodeAndCheckIfIsCkwFromSalesforce(imei);
 
     String countryCodeJson = String.format("{\"countryCode\" : \"%s\"}", new Object[] { countryCode });
 
@@ -38,17 +38,24 @@ public class GetCountryCode extends ApplabServlet
     log("Finished sending country code");
   }
 
-  private String getCountryCodeFromSalesforce(String imei)
+  private String getCountryCodeAndCheckIfIsCkwFromSalesforce(String imei)
   {
     try
     {
       SearchSalesforceProxy searchSaleforceProxy = new SearchSalesforceProxy();
       String countryCode = searchSaleforceProxy.getCountryCode(imei);
       log("Country code for IMEI " + imei + " is: " + countryCode);
+      boolean isCkw = searchSaleforceProxy.checkIfIsCkw(imei);
+      log("IMEI " + imei + " is CKw is " + isCkw);
+
+      if (isCkw) {
+        return countryCode + "-CKW";
+      }
       return countryCode;
     }
     catch (Exception e) {
-      log("Failed to get county code from salesforce");
+      log("Failed to get county code from salesforce" + e);
+
       e.printStackTrace();
     }
     return null;

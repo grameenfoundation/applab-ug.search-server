@@ -1,160 +1,167 @@
-package applab.search.server;
+package applab.search.feeds;
 
 import applab.Location;
-import applab.search.feeds.ParseIconLocationsFeedXml;
-import applab.server.ApplabServlet;
-import applab.server.DatabaseHelpers;
-import applab.server.ServletRequestContext;
 import applab.server.XmlHelpers;
+import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.rpc.ServiceException;
 import javax.xml.transform.TransformerException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-public class UpdateIconLocationsFeed extends ApplabServlet
+public class ParseIconLocationsFeedXml
 {
-  private static final long serialVersionUID = 1L;
-  public static final String REQUEST_ELEMENT_NAME = "locations";
-  public static final String RESPONSE_ELEMENT_NAME = "locations";
-  public static final String ROW_ELEMENT_NAME = "location";
-  public static final String LOCATION_ID_ELEMENT_NAME = "location_id";
-  public static List<LocationRequest> locationRequests;
+  private ArrayList<Location> locations;
+  private String iconLocationIdsFeedUrl;
 
-  protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws ServletException, IOException, SAXException, ParserConfigurationException, ParseException, ClassNotFoundException, SQLException, ServiceException, TransformerException
+  public ParseIconLocationsFeedXml(String iconLocationIdsFeedUrl)
   {
-    String iconLocationIdsFeedUrl = request.getSession().getServletContext().getRealPath("/") + "WEB-INF/IconLocationIds.xml";
-
-    locationRequests = new ArrayList();
-
-    log("Updating Icon Location Ids : " + DatabaseHelpers.formatDateTime(new Date()));
-
-    ParseIconLocationsFeedXml feed = new ParseIconLocationsFeedXml(iconLocationIdsFeedUrl);
-    feed.parseLocationsXml();
-
-    Document requestXml = XmlHelpers.parseXml(request.getReader());
-    parseRequest(requestXml);
-
-    response.setStatus(200);
-
-    context.writeXmlHeader();
-    context.writeStartElement("locations");
-
-    for (LocationRequest locationRequest : locationRequests)
-    {
-      if ((locationRequest.getLatitude() == null) || (locationRequest.getLongitude() == null))
-      {
-        continue;
-      }
-      Location location = feed.findClosestLocationId(locationRequest.getLatitude(), locationRequest.getLongitude());
-      if ((location == null) || 
-        (location.getLocationId() == null) || (location.getLocationId() == "")) continue;
-      context.writeStartElement("location");
-
-      context.writeStartElement(LocationRequestElement.subcounty_id.toString());
-      context.print(locationRequest.getSubcountyId());
-      context.writeEndElement();
-
-      context.writeStartElement("location_id");
-
-      context.print(location.getLocationId());
-
-      context.writeEndElement();
-
-      context.writeEndElement();
-    }
-
-    context.writeEndElement();
-    context.println("");
+    this.iconLocationIdsFeedUrl = iconLocationIdsFeedUrl;
+    initIconLocationsFeed();
   }
 
-  private static void parseRequest(Document requestXml)
+  private void initIconLocationsFeed()
+  {
+    this.locations = new ArrayList();
+  }
+
+  public ArrayList<Location> parseLocationsXml()
+    throws IOException, SAXException, ParserConfigurationException, ParseException, TransformerException
+  {
+    String xml = getIconLocationsXml();
+
+    if (xml == null) {
+      return null;
+    }
+
+    if (cleanUpLocationsXml(xml)) {
+      return this.locations;
+    }
+
+    return null;
+  }
+
+  public Location findClosestLocationId(String latitude, String longitude)
+    throws IOException, SAXException, ParserConfigurationException, ParseException, TransformerException
+  {
+    try
+    {
+      Location location = new Location(Float.valueOf(Float.parseFloat(latitude)), Float.valueOf(Float.parseFloat(longitude)));
+      System.out.println(location.getLatitude());
+    }
+    catch (Exception exc) {
+      exc.printStackTrace();
+      return null;
+    }
+    Location location;
+    ArrayList allLocations = parseLocationsXml();
+
+    double minimumDistance = 0.0D;
+    double currentDistance = 0.0D;
+    Location nearestLocation = new Location();
+
+    for (Location currentLocation : allLocations)
+    {
+      currentDistance = getDistance(location, currentLocation);
+
+      if (minimumDistance == 0.0D) {
+        minimumDistance = currentDistance;
+      }
+      else if (currentDistance < minimumDistance) {
+        minimumDistance = currentDistance;
+        nearestLocation = currentLocation;
+      }
+    }
+    if (nearestLocation != null) {
+      return nearestLocation;
+    }
+
+    return null;
+  }
+
+  private String getIconLocationsXml()
+    throws IOException, SAXException, ParserConfigurationException, TransformerException
+  {
+    File file = new File(this.iconLocationIdsFeedUrl);
+    Document document = XmlHelpers.parseXml(file);
+    return XmlHelpers.exportAsString(document);
+  }
+
+  private boolean cleanUpLocationsXml(String xml)
+    throws SAXException, IOException, ParserConfigurationException, ParseException
+  {
+    Document xmlDocument = XmlHelpers.parseXml(xml);
+    xmlDocument.normalizeDocument();
+    Element rootNode = xmlDocument.getDocumentElement();
+
+    parseXmlToLocations(rootNode);
+    return true;
+  }
+
+  private void parseXmlToLocations(Element rootNode)
     throws ParseException
   {
-    assert (requestXml != null);
-
-    requestXml.normalizeDocument();
-
-    Element rootNode = requestXml.getDocumentElement();
-
     for (Node childNode = rootNode.getFirstChild(); childNode != null; childNode = childNode
       .getNextSibling())
     {
       if ((childNode.getNodeType() != 1) || 
-        (!childNode.getLocalName().equals("location"))) continue;
-      parseLocationRequestItem((Element)childNode);
+        (!childNode.getLocalName().equals("locations"))) continue;
+      createLocation((Element)childNode);
     }
   }
 
-  private static void parseLocationRequestItem(Element itemNode)
+  private void createLocation(Element itemNode)
     throws ParseException
   {
-    String subcountyId = null;
-    String longitude = null;
-    String latitude = null;
+    Location location = new Location();
 
     for (Node childNode = itemNode.getFirstChild(); childNode != null; childNode = childNode
       .getNextSibling())
     {
-      if (childNode.getNodeType() != 1)
-        continue;
-      LocationRequestElement locationRequestElement = LocationRequestElement.valueOf(childNode
-        .getLocalName());
+      if (childNode.getNodeType() == 1) {
+        LocationItemElement itemElement = LocationItemElement.valueOf(childNode
+          .getLocalName());
 
-      switch (locationRequestElement) {
-      case latitude:
-        subcountyId = XmlHelpers.parseCharacterData((Element)childNode);
-        break;
-      case longitude:
-        longitude = XmlHelpers.parseCharacterData((Element)childNode);
-        break;
-      case subcounty_id:
-        latitude = XmlHelpers.parseCharacterData((Element)childNode);
+        switch (itemElement) {
+        case City:
+          location.setLocationId(XmlHelpers.parseCharacterData((Element)childNode));
+          break;
+        case Coastal:
+          location.setLongitude(XmlHelpers.parseCharacterData((Element)childNode));
+          break;
+        case Country:
+          location.setLatitude(XmlHelpers.parseCharacterData((Element)childNode));
+        }
       }
 
     }
 
-    locationRequests.add(new LocationRequest(subcountyId, longitude, latitude));
+    this.locations.add(location);
   }
-  static class LocationRequest { private String subcountyId;
-    private String longitude;
-    private String latitude;
 
-    public LocationRequest(String subcountyId, String longitude, String latitude) { this.subcountyId = subcountyId;
-      this.longitude = longitude;
-      this.latitude = latitude; }
-
-    public String getSubcountyId()
-    {
-      return this.subcountyId;
-    }
-
-    public String getLongitude() {
-      return this.longitude;
-    }
-
-    public String getLatitude() {
-      return this.latitude;
-    } }
-
-  private static enum LocationRequestElement
+  private double getDistance(Location X, Location Y)
   {
-    subcounty_id, 
-    longitude, 
-    latitude;
+    double R = 6371.0D;
+    double DLat = (Y.getLatitude().floatValue() - X.getLatitude().floatValue()) * 3.141592653589793D / 180.0D;
+    double DLon = (Y.getLongitude().floatValue() - X.getLongitude().floatValue()) * 3.141592653589793D / 180.0D;
+    double A = Math.sin(DLat / 2.0D) * Math.sin(DLat / 2.0D) + Math.cos(X.getLatitude().floatValue() * 3.141592653589793D / 180.0D) * 
+      Math.cos(Y.getLatitude().floatValue() * 3.141592653589793D / 180.0D) * Math.sin(DLon / 2.0D) * Math.sin(DLon / 2.0D);
+    double c = 2.0D * Math.atan2(Math.sqrt(A), Math.sqrt(1.0D - A));
+    double D = R * c;
+    return D;
+  }
+
+  private static enum LocationItemElement {
+    LocationID, 
+    Longitude, 
+    Latitude, 
+    City, 
+    Country, 
+    Coastal;
   }
 }

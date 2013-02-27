@@ -253,8 +253,7 @@ public class ParseFitFeedXml
     StringBuilder insertText = new StringBuilder();
     insertText.append("INSERT INTO ");
     insertText.append(DatabaseTable.Keyword.getTableName());
-    insertText
-      .append(" (keyword, categoryId, createDate, content, updated, attribution, otrigger, quizAction_action, quizAction_quizId) ");
+    insertText.append(" (keyword, categoryId, createDate, content, updated, attribution, otrigger, quizAction_action, quizAction_quizId) ");
     insertText.append("VALUES ");
     insertText.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
     this.insertStatement = this.connection.prepareStatement(insertText.toString());
@@ -329,13 +328,11 @@ public class ParseFitFeedXml
     this.regionMap = salesforceProxy.getRegionMap();
   }
 
-  private static enum Channel
-  {
+  private static enum Channel {
     Prices;
   }
 
-  private static enum ItemElement
-  {
+  private static enum ItemElement {
     market, 
     product, 
     unit, 

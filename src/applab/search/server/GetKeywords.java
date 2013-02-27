@@ -33,21 +33,13 @@ public class GetKeywords extends ApplabServlet
   private static final String UPDATED_ATTRIBUTE_NAME = "updated";
   private static final String VERSION_ATTRIBUTE_NAME = "version";
   private static final String TOTAL_ATTRIBUTE_NAME = "total";
-  private static final String IMEI = "x-Imei";
 
   protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
     throws IOException, SAXException, ParserConfigurationException, ClassNotFoundException, SQLException
   {
     try
     {
-      log("Reached getKeywords servlet");
-
-      String imei = request.getHeader("x-Imei");
-      log("x-Imei: " + imei);
-
       Document requestXml = context.getRequestBodyAsXml();
-      String localVersion = KeywordsContentBuilder.getLocalKeywordsVersion(requestXml);
-      log("Last update Date: " + localVersion);
       writeResponse(requestXml, context);
     }
     finally {
@@ -70,6 +62,7 @@ public class GetKeywords extends ApplabServlet
       ResultSet resultSet = KeywordsContentBuilder.doSelectQuery(selectCommand, requestXml);
 
       Integer total = Integer.valueOf(getResultSetSize(resultSet));
+
       if (total.intValue() > 0) {
         HashMap attributes = new HashMap();
         while (resultSet.next()) {
@@ -99,7 +92,6 @@ public class GetKeywords extends ApplabServlet
             String attribution = resultSet.getString("keywordAttribution");
             if ((attribution != null) && (attribution.trim().length() > 0)) {
               attribution = attribution.trim().replace("\r\n", "\n");
-              attribution = replaceXmlEscapeCharacters(attribution);
             }
             else {
               attribution = "";
@@ -109,7 +101,6 @@ public class GetKeywords extends ApplabServlet
             String updated = resultSet.getString("keywordUpdated");
             if ((updated != null) && (updated.trim().length() > 0)) {
               updated = XmlHelpers.escapeText(updated.trim().replace("\r\n", "\n"));
-              updated = replaceXmlEscapeCharacters(updated);
             }
             else {
               updated = "";
@@ -121,7 +112,6 @@ public class GetKeywords extends ApplabServlet
             String content = resultSet.getString("keywordContent");
             if ((content != null) && (content.trim().length() > 0)) {
               content = content.trim().replace("\r\n", "\n");
-              content = replaceXmlEscapeCharacters(content);
               context.writeText(content);
             }
             context.writeEndElement();
@@ -162,17 +152,7 @@ public class GetKeywords extends ApplabServlet
     {
       return size;
     }
-
+    int currentRow;
     return size;
-  }
-
-  private static String replaceXmlEscapeCharacters(String keyword)
-  {
-    keyword = keyword.replace("\"", "&quot;");
-    keyword = keyword.replace("'", "&quot;");
-    keyword = keyword.replace("<", "&lt");
-    keyword = keyword.replace(">", "&gt;");
-    keyword = keyword.replace("&", "&amp;");
-    return keyword;
   }
 }

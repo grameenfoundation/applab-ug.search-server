@@ -56,14 +56,14 @@
         <init-param>
             <description>The id in the database for this market_information category.</description>
             <param-name>categoryId</param-name>
-             
-            <!-- Test setting<param-value>63</param-value>-->
-            <param-value>64</param-value>
+            <!-- Test setting -->
+            <param-value>63</param-value>
+            <!-- Live setting <param-value>64</param-value> -->
         </init-param>
         <init-param>
             <description>The url for the Fit feed</description>
             <param-name>FitFeedUrl</param-name>
-            <param-value>http://mis.infotradeuganda.com/feed</param-value>
+            <param-value>http://infotradeuganda.com/feed</param-value>
         </init-param>
     </servlet>
     <servlet-mapping>
@@ -94,8 +94,10 @@
         <init-param>
             <description>The id in the database for this Regional_Weather_Info category.</description>
             <param-name>categoryId</param-name>
-            <!--<param-value>19</param-value> Test Server-->
-            <param-value>71</param-value>
+            <!-- Test setting -->
+            <!--<param-value>66</param-value>--> <!-- This is for Test Icon Weather on test --> 
+            <param-value>19</param-value> 
+            <!-- Live setting <param-value>71</param-value> -->
         </init-param>
         <init-param>
             <description>The url for the ICON Weather Feed</description>
@@ -118,7 +120,7 @@
     <url-pattern>/getsearchkeywords</url-pattern>
   </servlet-mapping>
   <servlet>
-    <description>Servlet to get images from Salesforce</description>
+    <description>Servlet to get images</description>
     <display-name>GetImagesFromSalesforce</display-name>
     <servlet-name>GetImagesFromSalesforce</servlet-name>
     <servlet-class>applab.search.server.GetImagesFromSalesforce</servlet-class>
@@ -126,6 +128,16 @@
   <servlet-mapping>
     <servlet-name>GetImagesFromSalesforce</servlet-name>
     <url-pattern>/getsfimages</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <description>Servlet to move keywords into SF</description>
+    <display-name>KeywordDuplicator</display-name>
+    <servlet-name>KeywordDuplicator</servlet-name>
+    <servlet-class>applab.search.server.KeywordDuplicator</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>KeywordDuplicator</servlet-name>
+    <url-pattern>/keywordduplicator</url-pattern>
   </servlet-mapping>
 <servlet>
     <description>Gets Available Farmer Ids from Salesforce</description>

@@ -1,9 +1,3 @@
-/**
- *
- * Copyright (c) 2011 AppLab, Grameen Foundation
- *
- **/
-
 package applab.search.feeds;
 
 public class Forecast

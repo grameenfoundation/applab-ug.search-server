@@ -14,12 +14,12 @@ import com.sforce.soap.enterprise.fault.UnexpectedErrorFault;
 import com.sforce.soap.schemas._class.UpdateKeywords.JsonRequest;
 import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsBindingStub;
 import com.sforce.soap.schemas._class.UpdateKeywords.UpdateKeywordsServiceLocator;
-import com.sforce.soap.schemas._class.UpdateKeywordsFromCache.UpdateKeywordsFromCacheBindingStub;
-import com.sforce.soap.schemas._class.UpdateKeywordsFromCache.UpdateKeywordsFromCacheServiceLocator;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,21 +39,15 @@ public class GetSearchKeywords extends ApplabServlet
   private static final String MENU_IDS = "menuIds";
 
   protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws Exception
+    throws ServletException, IOException, ServiceException
   {
     log("Reached get method");
     doApplabPost(request, response, context);
   }
 
   protected void doApplabPost(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws Exception
+    throws ServletException, IOException, ServiceException
   {
-    response.setContentType("application/json; charset=UTF-8");
-    PrintWriter out = response.getWriter();
-    SearchSalesforceProxy proxy = new SearchSalesforceProxy();
-
-    UpdateKeywordsBindingStub serviceStub = setupSalesforceAuthentication();
-    UpdateKeywordsFromCacheBindingStub serviceStubCache = setupSalesforceAuthenticationForCache();
     try
     {
       log("Reached post method");
@@ -62,6 +56,8 @@ public class GetSearchKeywords extends ApplabServlet
         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
       Date date = new Date();
       String currentVersion = dateFormat.format(date);
+
+      UpdateKeywordsBindingStub serviceStub = setupSalesforceAuthentication();
 
       String imei = request.getHeader("x-Imei");
       log("x-Imei: " + imei);
@@ -91,27 +87,19 @@ public class GetSearchKeywords extends ApplabServlet
         log("No previous menu Ids");
       }
 
-      if (((convertDateStringToDouble(currentVersion) - convertDateStringToDouble(keywordsDateString) > 200.0D) || (menuIds.length == 0)) && 
-        (proxy.checkIfImeiIsForPersonInCountryCode(imei, "UG"))) {
-        log("getting data from SF cache");
+      JsonRequest req = new JsonRequest();
+      req.setImei(imei);
+      req.setKeywordsLastUpdatedDate(keywordsDateString);
+      req.setImagesLastUpdatedDate(imagesDateString);
+      req.setMenuIds(menuIds);
 
-        out.println(serviceStubCache.getCachedKeywords(""));
-        log("Finished sending keywords");
-      }
-      else
-      {
-        JsonRequest req = new JsonRequest();
-        req.setImei(imei);
-        req.setKeywordsLastUpdatedDate(keywordsDateString);
-        req.setImagesLastUpdatedDate(imagesDateString);
-        req.setMenuIds(menuIds);
+      String[] jsonResults = serviceStub.getKeywords(req);
 
-        String[] jsonResults = serviceStub.getKeywords(req);
+      String json = buildJsonResponse(jsonResults, currentVersion);
 
-        String json = buildJsonResponse(jsonResults, currentVersion);
-        out.println(json);
-        log("Finished sending keywords");
-      }
+      PrintWriter out = response.getWriter();
+      out.println(json);
+      log("Finished sending keywords");
     }
     catch (DOMException e)
     {
@@ -127,11 +115,6 @@ public class GetSearchKeywords extends ApplabServlet
     {
       e.printStackTrace();
       log(e.getMessage());
-    }
-    catch (Exception e)
-    {
-      out.println(serviceStubCache.getCachedKeywords(""));
-      log("Finished sending keywords");
     }
   }
 
@@ -155,16 +138,6 @@ public class GetSearchKeywords extends ApplabServlet
     return str.toString();
   }
 
-  private double convertDateStringToDouble(String dateString)
-  {
-    String[] splits = dateString.split(" ");
-    String[] dateParts = splits[0].split("-");
-    if (dateParts.length == 3) {
-      return Double.parseDouble(dateParts[0] + dateParts[1] + dateParts[2]);
-    }
-    return Double.parseDouble(dateParts[0] + "0000");
-  }
-
   private UpdateKeywordsBindingStub setupSalesforceAuthentication()
     throws ServiceException, RemoteException, InvalidIdFault, UnexpectedErrorFault, LoginFault
   {
@@ -180,24 +153,6 @@ public class GetSearchKeywords extends ApplabServlet
     SessionHeader sessionHeader = new SessionHeader(loginResult.getSessionId());
 
     serviceStub.setHeader("http://soap.sforce.com/schemas/class/UpdateKeywords", "SessionHeader", sessionHeader);
-    return serviceStub;
-  }
-
-  private UpdateKeywordsFromCacheBindingStub setupSalesforceAuthenticationForCache()
-    throws ServiceException, RemoteException, InvalidIdFault, UnexpectedErrorFault, LoginFault
-  {
-    UpdateKeywordsFromCacheServiceLocator updateKeywordsServiceLocator = new UpdateKeywordsFromCacheServiceLocator();
-    UpdateKeywordsFromCacheBindingStub serviceStub = (UpdateKeywordsFromCacheBindingStub)updateKeywordsServiceLocator.getUpdateKeywordsFromCache();
-
-    SforceServiceLocator soapServiceLocator = new SforceServiceLocator();
-    soapServiceLocator.setSoapEndpointAddress((String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforceAddress", ""));
-    SoapBindingStub binding = (SoapBindingStub)soapServiceLocator.getSoap();
-    LoginResult loginResult = binding.login((String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforceUsername", ""), 
-      (String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforcePassword", "") + 
-      (String)ApplabConfiguration.getConfigParameter(WebAppId.global, "salesforceToken", ""));
-    SessionHeader sessionHeader = new SessionHeader(loginResult.getSessionId());
-
-    serviceStub.setHeader("http://soap.sforce.com/schemas/class/UpdateKeywordsFromCache", "SessionHeader", sessionHeader);
     return serviceStub;
   }
 }

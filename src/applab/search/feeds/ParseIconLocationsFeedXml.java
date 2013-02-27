@@ -1,9 +1,3 @@
-/**
- *
- * Copyright (c) 2011 AppLab, Grameen Foundation
- *
- **/
-
 package applab.search.feeds;
 
 import applab.Location;
@@ -44,6 +38,7 @@ public class ParseIconLocationsFeedXml
     if (xml == null) {
       return null;
     }
+
     if (cleanUpLocationsXml(xml)) {
       return this.locations;
     }
@@ -60,14 +55,17 @@ public class ParseIconLocationsFeedXml
       System.out.println(location.getLatitude());
     }
     catch (Exception exc) {
+      exc.printStackTrace();
       return null;
     }
     Location location;
+    ArrayList allLocations = parseLocationsXml();
+
     double minimumDistance = 0.0D;
     double currentDistance = 0.0D;
     Location nearestLocation = new Location();
 
-    for (Location currentLocation : this.locations)
+    for (Location currentLocation : allLocations)
     {
       currentDistance = getDistance(location, currentLocation);
 
