@@ -1,3 +1,9 @@
+/**
+ *
+ * Copyright (c) 2013 AppLab, Grameen Foundation
+ *
+ **/
+
 package applab.search.server;
 
 import applab.search.feeds.ParseFitFeedXml;
@@ -16,42 +22,40 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 import org.xml.sax.SAXException;
 
-public class UpdateFitFeed extends ApplabServlet
-{
-  private static final long serialVersionUID = 1L;
+public class UpdateFitFeed extends ApplabServlet {
+    private static final long serialVersionUID = 1L;
 
-  protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws ServletException, IOException, SAXException, ParserConfigurationException, ParseException, ClassNotFoundException, SQLException, ServiceException
-  {
-    String writeResult = request.getParameter("write");
-    String manualDate = request.getParameter("manualDate");
-    if (manualDate != null) {
-      manualDate = manualDate + " 23:59:59";
-    }
+    protected void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
+            throws ServletException, IOException, SAXException, ParserConfigurationException, ParseException, ClassNotFoundException,
+            SQLException, ServiceException {
+        String writeResult = request.getParameter("write");
+        String manualDate = request.getParameter("manualDate");
+        if (manualDate != null) {
+            manualDate = manualDate + " 23:59:59";
+        }
 
-    String fitFeedUrl = getServletConfig().getInitParameter("FitFeedUrl");
-    Integer categoryId = Integer.valueOf(getServletConfig().getInitParameter("categoryId"));
-    log("Updating Fit Feed on url " + fitFeedUrl + " with categoryId: " + categoryId + " " + manualDate);
-    ParseFitFeedXml feed = new ParseFitFeedXml(categoryId, fitFeedUrl, manualDate);
-    ArrayList keywords = feed.parseXml();
+        String fitFeedUrl = getServletConfig().getInitParameter("FitFeedUrl");
+        Integer categoryId = Integer.valueOf(getServletConfig().getInitParameter("categoryId"));
+        log("Updating Fit Feed on url " + fitFeedUrl + " with categoryId: " + categoryId + " " + manualDate);
+        ParseFitFeedXml feed = new ParseFitFeedXml(categoryId, fitFeedUrl, manualDate);
+        ArrayList keywords = feed.parseXml();
+        boolean allSaved = true;
+        log("Updating " + keywords.size() + " keywords");
+        if ((keywords.size() == 0) || (!feed.saveToDatabase())) {
+            allSaved = false;
+        }
 
-    boolean allSaved = true;
-    log("Updating " + keywords.size() + " keywords");
-    if ((keywords.size() == 0) || (!feed.saveToDatabase())) {
-      allSaved = false;
+        if (allSaved) {
+            if (writeResult == null) {
+                response.getWriter().write("All keywords have been updated");
+            }
+            log("All keywords updated successfully");
+        }
+        else {
+            if (writeResult == null) {
+                response.getWriter().write("There has been an error. I would investigate if I were you");
+            }
+            log("Some keywords have failed to update. May want check out the issue");
+        }
     }
-
-    if (allSaved) {
-      if (writeResult == null) {
-        response.getWriter().write("All keywords have been updated");
-      }
-      log("All keywords updated successfully");
-    }
-    else {
-      if (writeResult == null) {
-        response.getWriter().write("There has been an error. I would investigate if I were you");
-      }
-      log("Some keywords have failed to update. May want check out the issue");
-    }
-  }
 }

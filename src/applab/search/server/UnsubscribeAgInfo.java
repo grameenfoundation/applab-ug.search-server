@@ -1,3 +1,9 @@
+/**
+ *
+ * Copyright (c) 2013 AppLab, Grameen Foundation
+ *
+ **/
+
 package applab.search.server;
 
 import applab.server.ApplabServlet;
@@ -11,35 +17,30 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.rpc.ServiceException;
 
-public class UnsubscribeAgInfo extends ApplabServlet
-{
-  private static final long serialVersionUID = 1L;
+public class UnsubscribeAgInfo extends ApplabServlet {
+    private static final long serialVersionUID = 1L;
 
-  public void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context)
-    throws Exception
-  {
-    String responseMessage = "";
-    try {
-      String phoneNumber = request.getParameter("phoneNumber");
-      String message = request.getParameter("message");
-      log("Unsubscribing number: " + phoneNumber + " from channels " + message);
+    public void doApplabGet(HttpServletRequest request, HttpServletResponse response, ServletRequestContext context) throws Exception {
+        String responseMessage = "";
+        try {
+            String phoneNumber = request.getParameter("phoneNumber");
+            String message = request.getParameter("message");
+            log("Unsubscribing number: " + phoneNumber + " from channels " + message);
+            AgInfoSubscription subscription = new AgInfoSubscription(message, phoneNumber, false);
+            responseMessage = subscription.processAgInfoSubscription();
+        }
+        catch (Exception e) {
+            responseMessage = "We have failed to subscribe you to your topics. Please try again";
+        }
+        finally {
+            log(responseMessage);
+            response.getWriter().write(responseMessage);
+        }
+    }
 
-      AgInfoSubscription subscription = new AgInfoSubscription(message, phoneNumber, false);
-      responseMessage = subscription.processAgInfoSubscription();
+    public static String procesReg(String phoneNumber, String message) throws InvalidIdFault, UnexpectedErrorFault, LoginFault,
+            RemoteException, ServiceException {
+        AgInfoSubscription subscription = new AgInfoSubscription(message, phoneNumber, false);
+        return subscription.processAgInfoSubscription();
     }
-    catch (Exception e) {
-      responseMessage = "We have failed to subscribe you to your topics. Please try again";
-    }
-    finally {
-      log(responseMessage);
-      response.getWriter().write(responseMessage);
-    }
-  }
-
-  public static String procesReg(String phoneNumber, String message)
-    throws InvalidIdFault, UnexpectedErrorFault, LoginFault, RemoteException, ServiceException
-  {
-    AgInfoSubscription subscription = new AgInfoSubscription(message, phoneNumber, false);
-    return subscription.processAgInfoSubscription();
-  }
 }
