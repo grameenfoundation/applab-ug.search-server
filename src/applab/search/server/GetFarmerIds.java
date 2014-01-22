@@ -1,12 +1,5 @@
 package applab.search.server;
 
-import applab.server.ApplabConfiguration;
-import applab.server.ApplabServlet;
-import applab.server.DatabaseTable;
-import applab.server.SelectCommand;
-import applab.server.ServletRequestContext;
-import applab.server.WebAppId;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
@@ -14,22 +7,23 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.rpc.ServiceException;
 
-import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
+
+import applab.server.ApplabConfiguration;
+import applab.server.ApplabServlet;
+import applab.server.DatabaseTable;
+import applab.server.SelectCommand;
+import applab.server.ServletRequestContext;
+import applab.server.WebAppId;
 
 import com.sforce.soap.enterprise.LoginResult;
 import com.sforce.soap.enterprise.SessionHeader;
@@ -51,7 +45,7 @@ public class GetFarmerIds extends ApplabServlet {
     private static final String CURRENT_FARMER_ID_COUNT = "currentFarmerIdCount";
     private static final int FARMER_ID_SET_SIZE = 15;
     private static Connection connection;
-    /* Letters from which random farmer ids shall be generated */
+    /*/Letters from which random farmer ids shall be generated */
     private static String[] ALPHABET_LETTTERS = { "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "T", "U", "V", "X", "Y",
             "Z" };
     String imei = "";
@@ -61,6 +55,7 @@ public class GetFarmerIds extends ApplabServlet {
             throws Exception {
         log("Reached get method for get country code");
         doApplabPost(request, response, context);
+        
     }
 
     @Override
@@ -81,7 +76,6 @@ public class GetFarmerIds extends ApplabServlet {
 
             // make Salesforce call
             String jsonResult = getFarmerIdsFromSalesforce(imei, farmerIdCount);
-
             PrintWriter out = response.getWriter();
             out.println(jsonResult);
             log("Finished sending new Farmer Ids");
@@ -116,9 +110,7 @@ public class GetFarmerIds extends ApplabServlet {
 
         // 4. Save the newIds accepted by Salesforce to the DB and Generate JSON
         String savedFarmerIds = bulkRegisterFarmers.getSavedIds();
-
         String farmerIdsJson = saveNewFarmerIdsAndCreateJson(savedFarmerIds);
-
         return farmerIdsJson;
     }
 
@@ -142,11 +134,11 @@ public class GetFarmerIds extends ApplabServlet {
 
         /* Set to show generated Ids and check whether they exist in the database as alreay generated */
         HashSet<String> farmerIds = new HashSet<String>();
-        Random rand = new Random(1000);
-
-        while (farmerIds.size() < newIdCount) {
-
+        Random rand = new Random(System.nanoTime());
+       
+        while (farmerIds.size() < newIdCount) {        	
             long randomNumber = Math.round(rand.nextDouble() * 100000 - 1);
+        	//long randomNumber = new Long( GenerateRandomPin(5));
             int randomLetter = rand.nextInt(ALPHABET_LETTTERS.length);
 
             // Assumed country is Uganda for now ??
@@ -159,9 +151,10 @@ public class GetFarmerIds extends ApplabServlet {
             log("id added to collection: " + farmerId);
             farmerIds.add(farmerId);
         }
-
+        
         return convertArrayListToCsvString(farmerIds);
     }
+
 
     private PreRegisterFarmersBindingStub setupSalesforceAuthentication() throws ServiceException, RemoteException, InvalidIdFault,
             UnexpectedErrorFault, LoginFault {
@@ -213,7 +206,7 @@ public class GetFarmerIds extends ApplabServlet {
         }
         // save Ids to database
         saveFarmerIdsToDatabase(savedFarmerIdSet);
-        
+        log("Ids returned : " + savedFarmerIdSet);
         return sbFarmerIdsJson.toString();
     }
 
@@ -239,16 +232,38 @@ public class GetFarmerIds extends ApplabServlet {
        SelectCommand selectCommand = new SelectCommand(DatabaseTable.FarmerId);
         selectCommand.addField("farmerids.farmer_id", "farmerId");
         selectCommand.where("farmerids.farmer_id = '" + farmerId + "'");
-        ResultSet resultSet = selectCommand.execute();
-        boolean result = resultSet.first();
-        selectCommand.dispose();
         log("Built select commmand");
+        java.sql.Statement statement = connection.createStatement();
+        boolean result  = true;
+        try
+        {
+        	ResultSet resultSet = statement.executeQuery(selectCommand.getCommandText());
+        	if(resultSet.first())
+        	{
+        		result = true;
+        	}
+        	else
+        	{
+        		result = false;
+        	}
+        	statement.close();
+        }
+        catch(Exception e)
+        {
+        	log("Error checking if id is in use "+e.getMessage());
+        	e.printStackTrace(System.err);
+        }
+        //ResultSet resultSet = selectCommand.execute();
+        //boolean result = resultSet.first();
+        //selectCommand.dispose();
+        //log("Built select commmand");
 
         // returns true if there is a first row which in escence mean there is a matching farmer id, esle returns false
         return result;
     }
 
     private void saveFarmerIdsToDatabase(HashSet<String> farmerIds) throws ClassNotFoundException, SQLException {
+    	connection = SearchDatabaseHelpers.getWriterConnection();
         connection.setAutoCommit(false);
         StringBuilder commandText = new StringBuilder();
         commandText.append("INSERT INTO farmerids ");
@@ -261,6 +276,7 @@ public class GetFarmerIds extends ApplabServlet {
             submissionStatement.setString(2, imei);
             submissionStatement.addBatch();
         }
+        
         try {
             log("Prepared statement: " + submissionStatement.toString());
             submissionStatement.executeBatch();
