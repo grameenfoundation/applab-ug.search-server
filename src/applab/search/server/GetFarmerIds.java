@@ -2,7 +2,9 @@ package applab.search.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.rmi.RemoteException;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -88,6 +90,22 @@ public class GetFarmerIds extends ApplabServlet {
         }
     }
 
+    
+    
+    
+    
+    public long getLongSeed()
+    {
+    	//Generates a random seed to use with the random number generators
+        SecureRandom sec = new SecureRandom();
+        byte[] sbuf = sec.generateSeed(8);
+        ByteBuffer bb = ByteBuffer.wrap(sbuf);
+        return bb.getLong();
+    }
+    
+    
+    
+    
     private String getFarmerIdsFromSalesforce(String imei, int currentFarmerIdCount) throws RemoteException, ServiceException,
             ClassNotFoundException, SQLException {
         log("Reached Method getFarmerIdsFromSalesforce");
@@ -134,7 +152,7 @@ public class GetFarmerIds extends ApplabServlet {
 
         /* Set to show generated Ids and check whether they exist in the database as alreay generated */
         HashSet<String> farmerIds = new HashSet<String>();
-        Random rand = new Random(System.nanoTime());
+        Random rand = new Random(getLongSeed());
        
         while (farmerIds.size() < newIdCount) {        	
             long randomNumber = Math.round(rand.nextDouble() * 100000 - 1);
